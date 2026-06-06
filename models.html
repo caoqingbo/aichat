@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易聊智能 - 模型列表</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="whiteboard-home models-page">
+    <header class="wb-nav" id="top">
+        <a class="wb-brand" href="index.html" aria-label="易聊智能首页">
+            <svg class="wb-logo" viewBox="0 0 48 48" role="img" aria-label="易聊智能抽象路由标识">
+                <rect x="5" y="8" width="30" height="25" rx="9" fill="#fff" stroke="#0A0A0A" stroke-width="3"></rect>
+                <path d="M14 36 L10 44 L23 36" fill="#fff" stroke="#0A0A0A" stroke-width="3" stroke-linejoin="round"></path>
+                <circle cx="17" cy="20" r="4" fill="#A259FF"></circle>
+                <circle cx="31" cy="18" r="4" fill="#1ABCFE"></circle>
+                <circle cx="28" cy="30" r="4" fill="#0ACF83"></circle>
+                <path d="M20 20 L27 18 M29 22 L28 26" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round"></path>
+            </svg>
+            <span>易聊智能</span>
+        </a>
+        <button class="wb-menu-btn" type="button" aria-expanded="false" aria-controls="wbNavLinks">
+            <span></span><span></span><span></span>
+            <span class="sr-only">打开导航</span>
+        </button>
+        <nav class="wb-nav-links" id="wbNavLinks" aria-label="模型列表导航">
+            <a href="index.html">首页</a>
+            <a href="models.html">模型列表</a>
+            <a href="index.html#pricing">充值</a>
+            <a href="index.html#docs">开发者文档</a>
+        </nav>
+        <div class="wb-nav-actions" aria-label="账户入口">
+            <a class="wb-nav-cta" href="signin.html">登陆</a>
+            <a class="wb-nav-cta" href="login.html">注册</a>
+        </div>
+    </header>
+
+    <main class="models-shell">
+        <section class="model-tabs" aria-label="模型类型筛选">
+            <button class="active" type="button" data-model-filter="all" aria-pressed="true"><span>＋</span>全部模型 <b>3</b></button>
+            <button type="button" data-model-filter="chat" aria-pressed="false"><span>☰</span>对话模型 <b>1</b></button>
+            <button type="button" data-model-filter="image" aria-pressed="false"><span>▧</span>绘画模型 <b>1</b></button>
+            <button type="button" data-model-filter="video" aria-pressed="false"><span>▣</span>视频模型 <b>1</b></button>
+        </section>
+
+        <section class="model-table-card" aria-label="模型列表">
+            <div class="model-table-head">
+                <span>模型名称</span>
+                <span>类型</span>
+                <span>模型价格</span>
+                <span>上下文</span>
+                <span>操作</span>
+            </div>
+
+            <article class="model-row" data-model-type="chat">
+                <div class="model-name">
+                    <strong>gpt-5.4</strong>
+                    <small>gpt-5.4</small>
+                </div>
+                <div><span class="model-type chat">对话模型</span></div>
+                <div class="price-list">
+                    <span><b>经济优先</b><em>1折</em> 入 ¥1.88 ｜ 出 ¥11.25 /百万Token</span>
+                    <span><b>均衡推荐</b><em>3折</em> 入 ¥5.63 ｜ 出 ¥33.75 /百万Token</span>
+                    <span><b>高可用</b><em>5折</em> 入 ¥9.38 ｜ 出 ¥56.25 /百万Token</span>
+                    <span><b>官方原价</b> 入 ¥18.75 ｜ 出 ¥112.50 /百万Token</span>
+                </div>
+                <div class="model-context">标准</div>
+                <div class="model-actions">
+                    <button type="button">查看明细</button>
+                    <button type="button">复制ID</button>
+                </div>
+            </article>
+
+            <article class="model-row" data-model-type="image">
+                <div class="model-name">
+                    <strong>gpt-image-2</strong>
+                    <small>gpt-image-2</small>
+                </div>
+                <div><span class="model-type image">绘画模型</span></div>
+                <div class="price-list">
+                    <span><b>标准生成</b> ¥0.20 /张</span>
+                    <span><b>高清生成</b> ¥0.60 /张</span>
+                    <span><b>官方原价</b> ¥1.20 /张</span>
+                </div>
+                <div class="model-context">标准</div>
+                <div class="model-actions">
+                    <button type="button">查看明细</button>
+                    <button type="button">复制ID</button>
+                </div>
+            </article>
+
+            <article class="model-row" data-model-type="video">
+                <div class="model-name">
+                    <strong>grok-video</strong>
+                    <small>grok-video</small>
+                </div>
+                <div><span class="model-type video">视频模型</span></div>
+                <div class="price-list">
+                    <span><b>标准生成</b> ¥1.80 /秒</span>
+                    <span><b>高清生成</b> ¥3.60 /秒</span>
+                    <span><b>官方原价</b> ¥7.20 /秒</span>
+                </div>
+                <div class="model-context">标准</div>
+                <div class="model-actions">
+                    <button type="button">查看明细</button>
+                    <button type="button">复制ID</button>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <script src="home.js"></script>
+</body>
+</html>

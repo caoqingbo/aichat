@@ -1,291 +1,335 @@
-// ========== Configuration & State ==========
 const DEFAULT_CONFIG = {
-    apiBase: 'https://api.deepseek.com',
-    apiKey: '',
-    apiKeyDeepseek: '',
-    apiKeyOpenai: '',
-    apiKeyOpenrouter: '',
-    systemPrompt: '你是一个有帮助的AI助手。请用中文回答。',
+    apiBase: "",
+    apiKeyDeepseek: "",
+    apiKeyOpenai: "",
+    apiKeyOpenrouter: "",
+    systemPrompt: "你是一个有帮助的AI助手。请用中文回答，表达清晰，必要时给出步骤。",
     temperature: 0.7,
     contextMessages: 10,
+    useContext: true,
 };
 
 const MODEL_OPTIONS = [
-    // DeepSeek
-    { id: 'deepseek-chat', name: 'DeepSeek V3', apiBase: 'https://api.deepseek.com', group: 'DeepSeek' },
-    { id: 'deepseek-reasoner', name: 'DeepSeek R1', apiBase: 'https://api.deepseek.com', group: 'DeepSeek' },
-    { id: 'xiaomi/mimo-v2-flash', name: 'MiMo V2 Flash', apiBase: 'https://api.deepseek.com', group: 'DeepSeek' },
-    // OpenAI GPT
-    { id: 'gpt-4o', name: 'GPT-4o', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'gpt-4.1', name: 'GPT-4.1', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'gpt-4.1-nano', name: 'GPT-4.1 Nano', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'o4-mini', name: 'o4-mini', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'o3', name: 'o3', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'o3-mini', name: 'o3 Mini', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    { id: 'o3-pro', name: 'o3 Pro', apiBase: 'https://api.openai.com', group: 'OpenAI' },
-    // OpenRouter
-    { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'qwen/qwen3-235b-a22b', name: 'Qwen3 235B', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'deepseek/deepseek-chat-v3-0324', name: 'DeepSeek V3 (OR)', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
-    { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (OR)', apiBase: 'https://openrouter.ai/api', group: 'OpenRouter' },
+    { id: "gpt-5.4", name: "gpt-5.4", provider: "OpenAI", apiBase: "https://api.openai.com" },
+    { id: "gpt-4.1", name: "gpt-4.1", provider: "OpenAI", apiBase: "https://api.openai.com" },
+    { id: "gpt-4.1-mini", name: "gpt-4.1-mini", provider: "OpenAI", apiBase: "https://api.openai.com" },
+    { id: "gpt-4o", name: "gpt-4o", provider: "OpenAI", apiBase: "https://api.openai.com" },
+    { id: "gpt-4o-mini", name: "gpt-4o-mini", provider: "OpenAI", apiBase: "https://api.openai.com" },
+    { id: "o4-mini", name: "o4-mini", provider: "OpenAI", apiBase: "https://api.openai.com" },
+    { id: "o3", name: "o3", provider: "OpenAI", apiBase: "https://api.openai.com" },
+    { id: "deepseek-chat", name: "DeepSeek V3", provider: "DeepSeek", apiBase: "https://api.deepseek.com" },
+    { id: "deepseek-reasoner", name: "DeepSeek R1", provider: "DeepSeek", apiBase: "https://api.deepseek.com" },
+    { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
+    { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
+    { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
+    { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
+    { id: "qwen/qwen3-235b-a22b", name: "Qwen3 235B", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
+    { id: "deepseek/deepseek-r1", name: "DeepSeek R1 (OpenRouter)", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
 ];
 
 let config = { ...DEFAULT_CONFIG };
-let conversations = [];    // [{ id, title, messages: [{role, content}], createdAt }]
+let conversations = [];
 let currentChatId = null;
 let isStreaming = false;
 let abortController = null;
 
-// ========== DOM Elements ==========
-const $ = (sel) => document.querySelector(sel);
-const messagesEl = $('#messages');
-const userInput = $('#userInput');
-const sendBtn = $('#sendBtn');
-const modelSelect = $('#modelSelect');
-const tokenCountEl = $('#tokenCount');
-const chatListEl = $('#chatList');
-const sidebarEl = $('#sidebar');
-const sidebarToggle = $('#sidebarToggle');
-const settingsModal = $('#settingsModal');
-const settingsBtn = $('#settingsBtn');
-const closeSettings = $('#closeSettings');
-const saveSettingsBtn = $('#saveSettings');
-const newChatBtn = $('#newChatBtn');
+const $ = (selector) => document.querySelector(selector);
+const messagesEl = $("#messages");
+const userInput = $("#userInput");
+const sendBtn = $("#sendBtn");
+const modelSelect = $("#modelSelect");
+const modelSearch = $("#modelSearch");
+const tokenCountEl = $("#tokenCount");
+const chatListEl = $("#chatList");
+const settingsModal = $("#settingsModal");
+const settingsBtn = $("#settingsBtn");
+const advancedBtn = $("#advancedBtn");
+const closeSettings = $("#closeSettings");
+const saveSettingsBtn = $("#saveSettings");
+const newChatBtn = $("#newChatBtn");
+const clearChatBtn = $("#clearChatBtn");
+const contextToggle = $("#contextToggle");
+const modeLabel = $("#modeLabel");
+const scrollUpBtn = $("#scrollUpBtn");
+const scrollDownBtn = $("#scrollDownBtn");
 
-// ========== Init ==========
 function init() {
     loadConfig();
     loadConversations();
+    populateModelOptions();
     bindEvents();
     renderChatList();
+    syncConfigToUI();
 
-    // Marked config
-    marked.setOptions({
-        highlight: function(code, lang) {
-            if (lang && hljs.getLanguage(lang)) {
-                return hljs.highlight(code, { language: lang }).value;
-            }
-            return hljs.highlightAuto(code).value;
-        },
-        breaks: true,
-        gfm: true,
-    });
+    if (window.marked) {
+        marked.setOptions({
+            highlight(code, lang) {
+                if (window.hljs && lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return window.hljs ? hljs.highlightAuto(code).value : code;
+            },
+            breaks: true,
+            gfm: true,
+        });
+    }
 
-    // Open last chat or show welcome
     if (conversations.length > 0) {
         switchChat(conversations[0].id);
+    } else {
+        createNewChat(false);
     }
 }
 
-// ========== Local Storage ==========
 function loadConfig() {
     try {
-        const saved = localStorage.getItem('aichat_config');
-        if (saved) config = { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
-    } catch (e) {}
-    syncConfigToUI();
+        const saved = localStorage.getItem("aiai_chat_config");
+        config = saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : { ...DEFAULT_CONFIG };
+    } catch {
+        config = { ...DEFAULT_CONFIG };
+    }
 }
 
 function saveConfig() {
-    config.apiBase = $('#apiBase').value.trim() || DEFAULT_CONFIG.apiBase;
-    config.apiKeyDeepseek = $('#apiKeyDeepseek').value.trim();
-    config.apiKeyOpenai = $('#apiKeyOpenai').value.trim();
-    config.apiKeyOpenrouter = $('#apiKeyOpenrouter').value.trim();
-    config.apiKey = config.apiKeyDeepseek; // default
-    config.systemPrompt = $('#systemPrompt').value.trim();
-    config.temperature = parseFloat($('#temperature').value);
-    config.contextMessages = parseInt($('#contextMessages').value) || 10;
-    localStorage.setItem('aichat_config', JSON.stringify(config));
+    config.apiBase = $("#apiBase").value.trim();
+    config.apiKeyDeepseek = $("#apiKeyDeepseek").value.trim();
+    config.apiKeyOpenai = $("#apiKeyOpenai").value.trim();
+    config.apiKeyOpenrouter = $("#apiKeyOpenrouter").value.trim();
+    config.systemPrompt = $("#systemPrompt").value.trim();
+    config.temperature = Number.parseFloat($("#temperature").value) || 0.7;
+    config.contextMessages = Number.parseInt($("#contextMessages").value, 10) || 10;
+    config.useContext = contextToggle.checked;
+    localStorage.setItem("aiai_chat_config", JSON.stringify(config));
 }
 
 function syncConfigToUI() {
-    $('#apiBase').value = config.apiBase;
-    $('#apiKeyDeepseek').value = config.apiKeyDeepseek || '';
-    $('#apiKeyOpenai').value = config.apiKeyOpenai || '';    $('#apiKeyOpenrouter').value = config.apiKeyOpenrouter || '';    $('#systemPrompt').value = config.systemPrompt;
-    $('#temperature').value = config.temperature;
-    $('#tempValue').textContent = config.temperature;
-    $('#contextMessages').value = config.contextMessages;
+    $("#apiBase").value = config.apiBase;
+    $("#apiKeyDeepseek").value = config.apiKeyDeepseek;
+    $("#apiKeyOpenai").value = config.apiKeyOpenai;
+    $("#apiKeyOpenrouter").value = config.apiKeyOpenrouter;
+    $("#systemPrompt").value = config.systemPrompt;
+    $("#temperature").value = config.temperature;
+    $("#tempValue").textContent = config.temperature;
+    $("#contextMessages").value = config.contextMessages;
+    contextToggle.checked = config.useContext;
+    updateModeLabel();
 }
 
 function loadConversations() {
     try {
-        const saved = localStorage.getItem('aichat_conversations');
-        if (saved) conversations = JSON.parse(saved);
-    } catch (e) {
+        const saved = localStorage.getItem("aiai_chat_conversations") || localStorage.getItem("aichat_conversations");
+        conversations = saved ? JSON.parse(saved) : [];
+    } catch {
         conversations = [];
     }
 }
 
 function saveConversations() {
-    localStorage.setItem('aichat_conversations', JSON.stringify(conversations));
+    localStorage.setItem("aiai_chat_conversations", JSON.stringify(conversations));
 }
 
-// ========== Events ==========
 function bindEvents() {
-    // Send
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
+    sendBtn.addEventListener("click", handleSendButton);
+    userInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.ctrlKey && !event.shiftKey) {
+            event.preventDefault();
             sendMessage();
         }
     });
+    userInput.addEventListener("input", autoResizeInput);
 
-    // Auto-resize textarea
-    userInput.addEventListener('input', () => {
-        userInput.style.height = 'auto';
-        userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
-    });
-
-    // Sidebar toggle
-    sidebarToggle.addEventListener('click', () => {
-        document.body.classList.toggle('sidebar-open');
-        if (window.innerWidth <= 768) {
-            sidebarEl.classList.toggle('open');
-        } else {
-            sidebarEl.classList.toggle('collapsed');
-        }
-    });
-
-    // New chat
-    newChatBtn.addEventListener('click', () => createNewChat());
-
-    // Settings
-    settingsBtn.addEventListener('click', () => {
-        syncConfigToUI();
-        settingsModal.style.display = 'flex';
-    });
-    closeSettings.addEventListener('click', () => {
-        settingsModal.style.display = 'none';
-    });
-    saveSettingsBtn.addEventListener('click', () => {
+    newChatBtn.addEventListener("click", () => createNewChat(true));
+    clearChatBtn.addEventListener("click", clearCurrentChat);
+    settingsBtn.addEventListener("click", openSettings);
+    advancedBtn.addEventListener("click", openSettings);
+    closeSettings.addEventListener("click", closeSettingsModal);
+    saveSettingsBtn.addEventListener("click", () => {
         saveConfig();
-        settingsModal.style.display = 'none';
+        closeSettingsModal();
+        updateTokenCount();
     });
-    settingsModal.addEventListener('click', (e) => {
-        if (e.target === settingsModal) settingsModal.style.display = 'none';
-    });
-
-    // Temperature slider
-    $('#temperature').addEventListener('input', (e) => {
-        $('#tempValue').textContent = e.target.value;
+    settingsModal.addEventListener("click", (event) => {
+        if (event.target === settingsModal) closeSettingsModal();
     });
 
-    // Model switch - auto update API base & key
-    modelSelect.addEventListener('change', () => {
-        const model = MODEL_OPTIONS.find(m => m.id === modelSelect.value);
-        if (model) {
-            config.apiBase = model.apiBase;
-            // Auto-switch API key for the provider
-            if (model.apiBase.includes('openai.com')) {
-                config.apiKey = config.apiKeyOpenai || config.apiKey;
-            } else if (model.apiBase.includes('deepseek.com')) {
-                config.apiKey = config.apiKeyDeepseek || config.apiKey;
-            } else if (model.apiBase.includes('openrouter.ai')) {
-                config.apiKey = config.apiKeyOpenrouter || config.apiKey;
-            }
+    $("#temperature").addEventListener("input", (event) => {
+        $("#tempValue").textContent = event.target.value;
+    });
+
+    modelSelect.addEventListener("change", () => {
+        const chat = getCurrentChat();
+        if (chat) {
+            chat.model = modelSelect.value;
+            saveConversations();
         }
+        updateTokenCount();
     });
+
+    modelSearch.addEventListener("input", populateModelOptions);
+    contextToggle.addEventListener("change", () => {
+        config.useContext = contextToggle.checked;
+        saveConfig();
+        updateModeLabel();
+    });
+
+    scrollUpBtn.addEventListener("click", () => messagesEl.scrollTo({ top: 0, behavior: "smooth" }));
+    scrollDownBtn.addEventListener("click", scrollToBottom);
 }
 
-// ========== Chat Management ==========
-function createNewChat() {
+function populateModelOptions() {
+    const query = (modelSearch?.value || "").trim().toLowerCase();
+    const currentValue = modelSelect.value || MODEL_OPTIONS[0].id;
+    const filteredModels = MODEL_OPTIONS.filter((model) => {
+        const haystack = `${model.name} ${model.id} ${model.provider}`.toLowerCase();
+        return !query || haystack.includes(query);
+    });
+
+    const models = filteredModels.length ? filteredModels : MODEL_OPTIONS;
+    modelSelect.innerHTML = "";
+
+    const providers = [...new Set(models.map((model) => model.provider))];
+    providers.forEach((provider) => {
+        const group = document.createElement("optgroup");
+        group.label = provider;
+        models.filter((model) => model.provider === provider).forEach((model) => {
+            const option = document.createElement("option");
+            option.value = model.id;
+            option.textContent = model.name;
+            group.appendChild(option);
+        });
+        modelSelect.appendChild(group);
+    });
+
+    const hasCurrent = models.some((model) => model.id === currentValue);
+    modelSelect.value = hasCurrent ? currentValue : models[0].id;
+}
+
+function createNewChat(focusInput = true) {
     const chat = {
-        id: Date.now().toString(),
-        title: '新对话',
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        title: "新对话",
         messages: [],
+        model: modelSelect.value || MODEL_OPTIONS[0].id,
         createdAt: Date.now(),
+        updatedAt: Date.now(),
     };
     conversations.unshift(chat);
+    currentChatId = chat.id;
     saveConversations();
     renderChatList();
-    switchChat(chat.id);
-    if (window.innerWidth <= 768) {
-        sidebarEl.classList.remove('open');
-        document.body.classList.remove('sidebar-open');
-    }
+    renderMessages();
+    if (focusInput) userInput.focus();
 }
 
 function switchChat(chatId) {
     currentChatId = chatId;
+    const chat = getCurrentChat();
+    if (chat?.model) modelSelect.value = chat.model;
     renderChatList();
     renderMessages();
+    updateTokenCount();
 }
 
 function deleteChat(chatId) {
-    conversations = conversations.filter(c => c.id !== chatId);
+    const shouldDelete = window.confirm("确定删除这个对话吗？");
+    if (!shouldDelete) return;
+
+    conversations = conversations.filter((chat) => chat.id !== chatId);
+    if (currentChatId === chatId) currentChatId = conversations[0]?.id || null;
     saveConversations();
-    if (currentChatId === chatId) {
-        currentChatId = conversations.length > 0 ? conversations[0].id : null;
-    }
     renderChatList();
     renderMessages();
 }
 
-function getCurrentChat() {
-    return conversations.find(c => c.id === currentChatId);
+function clearCurrentChat() {
+    const chat = getCurrentChat();
+    if (!chat || chat.messages.length === 0) return;
+    if (!window.confirm("确定清空当前对话内容吗？")) return;
+    chat.messages = [];
+    chat.title = "新对话";
+    chat.updatedAt = Date.now();
+    saveConversations();
+    renderChatList();
+    renderMessages();
+    updateTokenCount();
 }
 
-// ========== Render ==========
+function getCurrentChat() {
+    return conversations.find((chat) => chat.id === currentChatId);
+}
+
 function renderChatList() {
-    chatListEl.innerHTML = '';
-    conversations.forEach(chat => {
-        const div = document.createElement('div');
-        div.className = 'chat-item' + (chat.id === currentChatId ? ' active' : '');
-        div.innerHTML = `
-            <span class="chat-title">${escapeHtml(chat.title)}</span>
-            <button class="delete-btn" data-id="${chat.id}" title="删除">×</button>
+    chatListEl.innerHTML = "";
+
+    if (conversations.length === 0) {
+        chatListEl.innerHTML = '<div class="chat-empty">暂无对话，点击“新对话”开始。</div>';
+        return;
+    }
+
+    conversations.forEach((chat) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = `chat-item${chat.id === currentChatId ? " active" : ""}`;
+        item.innerHTML = `
+            <span class="chat-title">
+                <strong>${escapeHtml(chat.title || "新对话")}</strong>
+                <time>${formatDate(chat.createdAt)}</time>
+            </span>
+            <span class="delete-btn" data-id="${chat.id}" title="删除">×</span>
         `;
-        div.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-btn')) return;
-            switchChat(chat.id);
-            if (window.innerWidth <= 768) {
-                sidebarEl.classList.remove('open');
-                document.body.classList.remove('sidebar-open');
+        item.addEventListener("click", (event) => {
+            if (event.target.classList.contains("delete-btn")) {
+                event.stopPropagation();
+                deleteChat(chat.id);
+                return;
             }
+            switchChat(chat.id);
         });
-        div.querySelector('.delete-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            deleteChat(chat.id);
-        });
-        chatListEl.appendChild(div);
+        chatListEl.appendChild(item);
     });
 }
 
 function renderMessages() {
     const chat = getCurrentChat();
+    const scrollControls = `
+        <div class="scroll-controls" aria-hidden="true">
+            <button id="scrollUpBtnInline">⌃</button>
+            <button id="scrollDownBtnInline">⌄</button>
+        </div>
+    `;
+
     if (!chat || chat.messages.length === 0) {
         messagesEl.innerHTML = `
-            <div class="welcome">
-                <h1>🤖 AI Chat</h1>
-                <p>选择模型并开始对话</p>
+            <div class="empty-state">
+                <span class="bot-icon">🤖</span>
+                <h2>开始新的对话</h2>
+                <p>选择一个AI模型，开始您的智能对话之旅</p>
             </div>
+            ${scrollControls}
         `;
+        bindInlineScrollButtons();
         return;
     }
 
-    messagesEl.innerHTML = '';
-    chat.messages.forEach(msg => {
-        appendMessageEl(msg.role, msg.content, false);
-    });
+    messagesEl.innerHTML = "";
+    chat.messages.forEach((message) => appendMessageEl(message.role, message.content));
+    messagesEl.insertAdjacentHTML("beforeend", scrollControls);
+    bindInlineScrollButtons();
     scrollToBottom();
 }
 
-function appendMessageEl(role, content, animate = false) {
-    const div = document.createElement('div');
-    div.className = `message ${role}`;
+function bindInlineScrollButtons() {
+    $("#scrollUpBtnInline")?.addEventListener("click", () => messagesEl.scrollTo({ top: 0, behavior: "smooth" }));
+    $("#scrollDownBtnInline")?.addEventListener("click", scrollToBottom);
+}
 
-    const roleName = role === 'user' ? '👤 你' : '🤖 AI';
-    const rendered = role === 'assistant' ? renderMarkdown(content) : escapeHtml(content);
+function appendMessageEl(role, content) {
+    const wrapper = document.createElement("div");
+    wrapper.className = `message ${role}`;
+    const roleName = role === "user" ? "你" : "AI";
+    const rendered = role === "assistant" ? renderMarkdown(content) : escapeHtml(content).replace(/\n/g, "<br>");
 
-    div.innerHTML = `
+    wrapper.innerHTML = `
         <div class="message-inner">
             <div class="message-bubble">
                 <div class="message-role">${roleName}</div>
@@ -293,149 +337,101 @@ function appendMessageEl(role, content, animate = false) {
             </div>
         </div>
     `;
-    messagesEl.appendChild(div);
+    messagesEl.appendChild(wrapper);
 
-    // Add copy buttons to code blocks
-    if (role === 'assistant') {
-        div.querySelectorAll('pre code').forEach(block => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'code-block-wrapper';
-            block.parentNode.parentNode.insertBefore(wrapper, block.parentNode);
-            wrapper.appendChild(block.parentNode);
+    if (role === "assistant") addCopyButtons(wrapper);
+    return wrapper;
+}
 
-            const btn = document.createElement('button');
-            btn.className = 'copy-code-btn';
-            btn.textContent = '复制';
-            btn.addEventListener('click', () => {
-                navigator.clipboard.writeText(block.textContent).then(() => {
-                    btn.textContent = '已复制!';
-                    setTimeout(() => btn.textContent = '复制', 1500);
-                });
-            });
-            wrapper.appendChild(btn);
+function addCopyButtons(root) {
+    root.querySelectorAll("pre code").forEach((block) => {
+        const pre = block.parentNode;
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block-wrapper";
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
+        const button = document.createElement("button");
+        button.className = "copy-code-btn";
+        button.textContent = "复制";
+        button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(block.textContent);
+            button.textContent = "已复制";
+            setTimeout(() => {
+                button.textContent = "复制";
+            }, 1400);
         });
-    }
-
-    return div;
+        wrapper.appendChild(button);
+    });
 }
 
 function renderMarkdown(text) {
     try {
-        return marked.parse(text);
-    } catch (e) {
-        return escapeHtml(text);
+        return window.marked ? marked.parse(text || "") : escapeHtml(text || "");
+    } catch {
+        return escapeHtml(text || "");
     }
 }
 
 function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
+    const div = document.createElement("div");
+    div.textContent = text || "";
     return div.innerHTML;
 }
 
-function scrollToBottom() {
-    requestAnimationFrame(() => {
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-    });
+function formatDate(timestamp) {
+    return new Intl.DateTimeFormat("zh-CN", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+    }).format(timestamp || Date.now());
 }
 
-// ========== Send Message ==========
 async function sendMessage() {
     const text = userInput.value.trim();
     if (!text || isStreaming) return;
 
-    if (!config.apiKey) {
-        alert('请先在设置中配置 API Key');
-        settingsModal.style.display = 'flex';
+    const model = getSelectedModel();
+    const apiKey = getApiKeyForModel(model);
+    const apiBase = getApiBaseForModel(model);
+
+    if (!apiKey) {
+        openSettings();
+        alert(`请先在高级设置中配置 ${model.provider} API Key`);
         return;
     }
 
-    // Auto-select correct API key based on model
-    const model = MODEL_OPTIONS.find(m => m.id === modelSelect.value);
-    if (model) {
-        if (model.apiBase.includes('openai.com') && config.apiKeyOpenai) {
-            config.apiKey = config.apiKeyOpenai;
-        } else if (model.apiBase.includes('deepseek.com') && config.apiKeyDeepseek) {
-            config.apiKey = config.apiKeyDeepseek;
-        } else if (model.apiBase.includes('openrouter.ai') && config.apiKeyOpenrouter) {
-            config.apiKey = config.apiKeyOpenrouter;
-        }
-    }
-
-    // Ensure we have a chat
-    if (!currentChatId) {
-        createNewChat();
-    }
+    if (!currentChatId) createNewChat(false);
     const chat = getCurrentChat();
     if (!chat) return;
 
-    // Add user message
-    chat.messages.push({ role: 'user', content: text });
-
-    // Auto-title from first message
-    if (chat.messages.length === 1) {
-        chat.title = text.substring(0, 30) + (text.length > 30 ? '...' : '');
-        renderChatList();
-    }
-
+    chat.model = model.id;
+    chat.messages.push({ role: "user", content: text });
+    chat.updatedAt = Date.now();
+    if (chat.messages.length === 1) chat.title = text.slice(0, 28) + (text.length > 28 ? "..." : "");
     saveConversations();
 
-    // Show user message
-    appendMessageEl('user', text, false);
+    removeEmptyState();
+    appendMessageEl("user", text);
+    userInput.value = "";
+    autoResizeInput();
+    renderChatList();
 
-    // Clear input
-    userInput.value = '';
-    userInput.style.height = 'auto';
-
-    // Show loading
-    const loadingEl = document.createElement('div');
-    loadingEl.className = 'message assistant';
-    loadingEl.innerHTML = `
-        <div class="message-inner">
-            <div class="message-bubble">
-                <div class="message-role">🤖 AI</div>
-                <div class="loading">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </div>
-            </div>
-        </div>
-    `;
-    messagesEl.appendChild(loadingEl);
-    scrollToBottom();
-
-    // Build messages for API
-    const apiMessages = [];
-    if (config.systemPrompt) {
-        apiMessages.push({ role: 'system', content: config.systemPrompt });
-    }
-
-    // Context window
-    const ctxCount = config.contextMessages;
-    const startIdx = Math.max(0, chat.messages.length - 1 - ctxCount);
-    for (let i = startIdx; i < chat.messages.length; i++) {
-        apiMessages.push(chat.messages[i]);
-    }
-
-    // Call API
+    const loadingEl = appendLoadingMessage();
     isStreaming = true;
-    updateSendButton();
     abortController = new AbortController();
+    updateSendButton();
 
     try {
-        const baseUrl = config.apiBase.replace(/\/+$/, '');
-        const url = `${baseUrl}/v1/chat/completions`;
-
-        const response = await fetch(url, {
-            method: 'POST',
+        const response = await fetch(`${apiBase.replace(/\/+$/, "")}/v1/chat/completions`, {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.apiKey}`,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: modelSelect.value,
-                messages: apiMessages,
+                model: model.id,
+                messages: buildApiMessages(chat),
                 temperature: config.temperature,
                 stream: true,
             }),
@@ -444,94 +440,157 @@ async function sendMessage() {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(`API 错误 ${response.status}: ${errorData.error?.message || response.statusText}`);
+            throw new Error(errorData.error?.message || `${response.status} ${response.statusText}`);
         }
 
-        // Remove loading indicator, add assistant message
         loadingEl.remove();
-        let fullContent = '';
-        const assistantEl = appendMessageEl('assistant', '', false);
-        const contentEl = assistantEl.querySelector('.markdown-body');
-        contentEl.classList.add('streaming-cursor');
+        let fullContent = "";
+        const assistantEl = appendMessageEl("assistant", "");
+        const contentEl = assistantEl.querySelector(".markdown-body");
+        contentEl.classList.add("streaming-cursor");
 
-        // Parse SSE stream
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+        await readStream(response, (delta) => {
+            fullContent += delta;
+            contentEl.innerHTML = renderMarkdown(fullContent);
+            scrollToBottom();
+        });
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop(); // Keep incomplete line
-
-            for (const line of lines) {
-                if (!line.startsWith('data: ')) continue;
-                const data = line.slice(6).trim();
-                if (data === '[DONE]') continue;
-
-                try {
-                    const parsed = JSON.parse(data);
-                    const delta = parsed.choices?.[0]?.delta?.content;
-                    if (delta) {
-                        fullContent += delta;
-                        contentEl.innerHTML = renderMarkdown(fullContent);
-                    }
-                } catch (e) {
-                    // Skip unparseable chunks
-                }
-            }
-        }
-
-        contentEl.classList.remove('streaming-cursor');
-
-        // Save assistant message
-        chat.messages.push({ role: 'assistant', content: fullContent });
+        contentEl.classList.remove("streaming-cursor");
+        addCopyButtons(assistantEl);
+        chat.messages.push({ role: "assistant", content: fullContent || "（模型没有返回内容）" });
+        chat.updatedAt = Date.now();
         saveConversations();
-
-        // Update token estimate
-        updateTokenCount(fullContent);
-
-    } catch (err) {
+    } catch (error) {
         loadingEl.remove();
-        if (err.name === 'AbortError') {
-            appendMessageEl('assistant', '⏹ 已停止生成。');
-        } else {
-            appendMessageEl('assistant', `❌ 错误: ${err.message}`);
-        }
+        const message = error.name === "AbortError" ? "已停止生成。" : `错误：${error.message}`;
+        appendMessageEl("assistant", message);
     } finally {
         isStreaming = false;
         abortController = null;
         updateSendButton();
+        updateTokenCount();
         scrollToBottom();
     }
 }
 
-// ========== UI Helpers ==========
-function updateSendButton() {
-    if (isStreaming) {
-        sendBtn.innerHTML = '⏹';
-        sendBtn.onclick = stopGeneration;
-        sendBtn.disabled = false;
-    } else {
-        sendBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"/></svg>`;
-        sendBtn.onclick = sendMessage;
-        sendBtn.disabled = false;
+function buildApiMessages(chat) {
+    const apiMessages = [];
+    if (config.systemPrompt) apiMessages.push({ role: "system", content: config.systemPrompt });
+
+    if (!config.useContext) {
+        apiMessages.push(chat.messages[chat.messages.length - 1]);
+        return apiMessages;
+    }
+
+    const count = Math.max(1, config.contextMessages);
+    chat.messages.slice(-count).forEach((message) => apiMessages.push(message));
+    return apiMessages;
+}
+
+async function readStream(response, onDelta) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data:")) continue;
+            const data = trimmed.slice(5).trim();
+            if (data === "[DONE]") continue;
+
+            try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.choices?.[0]?.delta?.content || "";
+                if (delta) onDelta(delta);
+            } catch {
+                continue;
+            }
+        }
     }
 }
 
-function stopGeneration() {
-    if (abortController) abortController.abort();
+function appendLoadingMessage() {
+    const loadingEl = document.createElement("div");
+    loadingEl.className = "message assistant";
+    loadingEl.innerHTML = `
+        <div class="message-inner">
+            <div class="message-bubble">
+                <div class="message-role">AI</div>
+                <div class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            </div>
+        </div>
+    `;
+    messagesEl.appendChild(loadingEl);
+    scrollToBottom();
+    return loadingEl;
 }
 
-function updateTokenCount(text) {
-    // Rough estimate: 1 token ≈ 1.5 Chinese chars or 4 English chars
-    const charCount = text.length;
-    const estimatedTokens = Math.round(charCount / 1.5);
-    tokenCountEl.textContent = `≈ ${estimatedTokens} tokens`;
+function getSelectedModel() {
+    return MODEL_OPTIONS.find((model) => model.id === modelSelect.value) || MODEL_OPTIONS[0];
 }
 
-// ========== Start ==========
+function getApiBaseForModel(model) {
+    return config.apiBase || model.apiBase;
+}
+
+function getApiKeyForModel(model) {
+    if (model.provider === "OpenAI") return config.apiKeyOpenai;
+    if (model.provider === "DeepSeek") return config.apiKeyDeepseek;
+    if (model.provider === "OpenRouter") return config.apiKeyOpenrouter;
+    return "";
+}
+
+function handleSendButton() {
+    if (isStreaming) {
+        abortController?.abort();
+        return;
+    }
+    sendMessage();
+}
+
+function updateSendButton() {
+    sendBtn.textContent = isStreaming ? "停止" : "发送";
+}
+
+function autoResizeInput() {
+    userInput.style.height = "auto";
+    userInput.style.height = `${Math.min(userInput.scrollHeight, 210)}px`;
+}
+
+function removeEmptyState() {
+    messagesEl.querySelector(".empty-state")?.remove();
+}
+
+function scrollToBottom() {
+    requestAnimationFrame(() => {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+}
+
+function updateTokenCount() {
+    const chat = getCurrentChat();
+    const chars = chat ? chat.messages.reduce((total, message) => total + message.content.length, 0) : 0;
+    tokenCountEl.textContent = chars ? `约 ${Math.ceil(chars / 1.6)} tokens` : "";
+}
+
+function updateModeLabel() {
+    modeLabel.textContent = "单次对话";
+}
+
+function openSettings() {
+    syncConfigToUI();
+    settingsModal.hidden = false;
+}
+
+function closeSettingsModal() {
+    settingsModal.hidden = true;
+}
+
 init();

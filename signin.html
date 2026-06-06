@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易聊智能 - 登陆</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page login-landing-page">
+    <header class="wb-nav" id="top">
+        <a class="wb-brand" href="index.html" aria-label="易聊智能首页">
+            <svg class="wb-logo" viewBox="0 0 48 48" role="img" aria-label="易聊智能抽象路由标识">
+                <rect x="5" y="8" width="30" height="25" rx="9" fill="#fff" stroke="#0A0A0A" stroke-width="3"></rect>
+                <path d="M14 36 L10 44 L23 36" fill="#fff" stroke="#0A0A0A" stroke-width="3" stroke-linejoin="round"></path>
+                <circle cx="17" cy="20" r="4" fill="#A259FF"></circle>
+                <circle cx="31" cy="18" r="4" fill="#1ABCFE"></circle>
+                <circle cx="28" cy="30" r="4" fill="#0ACF83"></circle>
+                <path d="M20 20 L27 18 M29 22 L28 26" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round"></path>
+            </svg>
+            <span>易聊智能</span>
+        </a>
+        <button class="wb-menu-btn" type="button" aria-expanded="false" aria-controls="wbNavLinks">
+            <span></span><span></span><span></span>
+            <span class="sr-only">打开导航</span>
+        </button>
+        <nav class="wb-nav-links" id="wbNavLinks" aria-label="登录页导航">
+            <a href="index.html">首页</a>
+            <a href="models.html">模型列表</a>
+            <a href="index.html#pricing">充值</a>
+            <a href="index.html#docs">开发者文档</a>
+        </nav>
+        <div class="wb-nav-actions" aria-label="账户入口">
+            <a class="wb-nav-cta" href="signin.html">登陆</a>
+            <a class="wb-nav-cta" href="login.html">注册</a>
+        </div>
+    </header>
+
+    <main class="login-landing">
+        <section class="login-hero" aria-label="登陆易聊智能">
+            <h1>现在开始使用易聊智能</h1>
+            <p>一个入口，连接 20+ 主流 AI 模型。更低成本，更快响应，更简单的 AI 使用体验。</p>
+
+            <form class="login-signup-form account-login-form" action="chat.html">
+                <input type="text" name="account" placeholder="账号" aria-label="账号" autocomplete="username">
+                <label class="password-field">
+                    <input type="password" name="password" placeholder="密码" aria-label="密码" autocomplete="current-password">
+                    <button class="password-toggle" type="button" aria-label="显示密码" data-password-toggle="password">👁</button>
+                </label>
+                <button class="wb-btn wb-btn-primary" type="submit">登陆</button>
+            </form>
+
+        </section>
+    </main>
+
+    <footer class="wb-footer login-footer">
+        <div><h3>产品</h3><a href="models.html">模型聚合</a><a href="models.html">智能调度</a><a href="index.html#docs">API 接入</a><a href="index.html#pricing">价格</a></div>
+        <div><h3>资源</h3><a href="index.html#docs">开发文档</a><a href="index.html#scenarios">使用教程</a><a href="models.html">模型列表</a><a href="index.html#contact">常见问题</a></div>
+        <div><h3>公司</h3><a href="#">关于我们</a><a href="index.html#contact">联系我们</a><a href="#">服务条款</a><a href="#">隐私政策</a></div>
+        <div><h3>联系</h3><a href="index.html#contact">商务合作</a><a href="index.html#contact">企业咨询</a><a href="index.html#contact">客服支持</a></div>
+    </footer>
+
+    <script src="home.js"></script>
+</body>
+</html>
