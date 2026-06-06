@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天工作台 - 易聊智能</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="page-shell">
+    <header class="page-header">
+        <a class="page-brand" href="../index.html">易聊智能</a>
+        <nav class="page-nav" aria-label="聊天页导航">
+            <a href="../index.html">首页</a>
+            <a href="models.html">模型列表</a>
+            <a href="signin.html">登陆</a>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        <section class="page-hero">
+            <div class="page-hero-inner">
+                <div>
+                    <span class="eyebrow">聊天工作台</span>
+                    <h1>把常用 AI 对话集中到一个页面里</h1>
+                    <p>在一个统一入口里切换模型、管理上下文和常用提示词，减少多平台来回切换。</p>
+                    <div class="chip-row">
+                        <span class="tag">GPT-5</span>
+                        <span class="tag">Claude</span>
+                        <span class="tag">通义千问</span>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3>工作台亮点</h3>
+                    <div class="stat-list">
+                        <div class="stat-item"><strong>统一对话历史</strong><span>集中查看不同模型的回复与上下文。</span></div>
+                        <div class="stat-item"><strong>快速提示词</strong><span>一键插入常见任务，减少重复输入。</span></div>
+                        <div class="stat-item"><strong>模型切换</strong><span>按场景选择速度优先或质量优先的模型。</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="chat-layout">
+                <aside class="sidebar">
+                    <h2>常用场景</h2>
+                    <p>用预设提示词快速开始一个任务。</p>
+                    <div class="quick-actions">
+                        <button class="chip-button" type="button" data-target="#chatPrompt" data-quick-message="请帮我总结这段会议纪要，并整理成三条行动项。">会议总结</button>
+                        <button class="chip-button" type="button" data-target="#chatPrompt" data-quick-message="请帮我把这段产品描述润色成更简洁的营销文案。">文案润色</button>
+                        <button class="chip-button" type="button" data-target="#chatPrompt" data-quick-message="请帮我解释下面代码的核心逻辑和潜在问题。">代码分析</button>
+                    </div>
+                </aside>
+
+                <section class="chat-window" aria-label="聊天区域">
+                    <div class="chip-row">
+                        <span class="status-pill">当前模型：GPT-5 Turbo</span>
+                        <span class="tag">成本优先</span>
+                    </div>
+
+                    <div class="message-list">
+                        <article class="message assistant">
+                            <strong>系统消息</strong>
+                            <p>欢迎来到易聊智能工作台。你可以先选择一个提示词模板，再继续细化你的问题。</p>
+                        </article>
+                        <article class="message user">
+                            <strong>示例需求</strong>
+                            <p>帮我写一份面向团队的 AI 接入方案介绍，突出成本和稳定性。</p>
+                        </article>
+                        <article class="message assistant">
+                            <strong>示例回答</strong>
+                            <p>可以先从统一接入、模型路由、费用透明和权限管理四个角度展开，再配合团队版场景说明实际收益。</p>
+                        </article>
+                    </div>
+
+                    <div class="composer">
+                        <label class="sr-only" for="chatPrompt">输入消息</label>
+                        <textarea id="chatPrompt" placeholder="输入你的问题，或点击左侧快捷提示词开始..."></textarea>
+                        <div class="button-row">
+                            <a class="wb-btn wb-btn-outline" href="models.html">先看模型列表</a>
+                            <button class="wb-btn wb-btn-primary" type="button">发送（演示）</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="../assets/js/app.js"></script>
+</body>
+</html>

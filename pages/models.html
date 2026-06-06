@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型列表 - 易聊智能</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="page-shell">
+    <header class="page-header">
+        <a class="page-brand" href="../index.html">易聊智能</a>
+        <nav class="page-nav" aria-label="模型页导航">
+            <a href="../index.html">首页</a>
+            <a href="chat.html">聊天工作台</a>
+            <a href="signin.html">登陆</a>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        <section class="page-hero">
+            <div class="page-hero-inner">
+                <div>
+                    <span class="eyebrow">模型列表</span>
+                    <h1>按任务场景选择最适合的 AI 模型</h1>
+                    <p>通过统一目录查看不同模型的能力、速度和成本定位，让模型选择更直观。</p>
+                </div>
+                <div class="panel">
+                    <h3>筛选建议</h3>
+                    <p>内容创作适合高质量生成模型，开发与分析可优先选择推理或代码能力更强的模型。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="filter-row" data-filter-group data-filter-target="[data-model-card]">
+                <button class="filter-button active" type="button" data-filter="all">全部</button>
+                <button class="filter-button" type="button" data-filter="text">文本</button>
+                <button class="filter-button" type="button" data-filter="code">代码</button>
+                <button class="filter-button" type="button" data-filter="speed">速度优先</button>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="list-grid">
+                <article class="model-card" data-model-card data-tags="text code">
+                    <h3>GPT-5</h3>
+                    <p>适合高质量内容生成、复杂分析与跨领域任务处理。</p>
+                    <div class="model-meta">
+                        <span class="tag">文本</span>
+                        <span class="tag">代码</span>
+                        <span class="status-pill">质量优先</span>
+                    </div>
+                </article>
+                <article class="model-card" data-model-card data-tags="text speed">
+                    <h3>Claude</h3>
+                    <p>适合长文本总结、方案整理与风格稳定的对话任务。</p>
+                    <div class="model-meta">
+                        <span class="tag">文本</span>
+                        <span class="status-pill">稳定输出</span>
+                    </div>
+                </article>
+                <article class="model-card" data-model-card data-tags="code speed">
+                    <h3>通义千问</h3>
+                    <p>适合多轮问答、中文内容处理以及高频成本敏感场景。</p>
+                    <div class="model-meta">
+                        <span class="tag">代码</span>
+                        <span class="tag">速度优先</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <script src="../assets/js/app.js"></script>
+</body>
+</html>
