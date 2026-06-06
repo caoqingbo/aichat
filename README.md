@@ -4,17 +4,17 @@
 
 ## 当前仓库内容
 
-- `/tmp/workspace/caoqingbo/aichat/index.html`
+- `index.html`
   - 当前仓库中唯一可直接阅读的主要页面。
   - 内容是“易聊智能”官网首页，主题是 **AI 模型聚合服务**。
   - 页面包含导航、Hero 区、功能介绍、套餐定价和页脚。
-- `/tmp/workspace/caoqingbo/aichat/style.css`
-- `/tmp/workspace/caoqingbo/aichat/home.js`
-- `/tmp/workspace/caoqingbo/aichat/chat.html`
-- `/tmp/workspace/caoqingbo/aichat/login.html`
-- `/tmp/workspace/caoqingbo/aichat/models.html`
-- `/tmp/workspace/caoqingbo/aichat/signin.html`
-- `/tmp/workspace/caoqingbo/aichat/app.js`
+- `style.css`
+- `home.js`
+- `chat.html`
+- `login.html`
+- `models.html`
+- `signin.html`
+- `app.js`
   - 以上文件目前都不是正常源码文本，而是 AppleDouble 元数据文件，暂时无法作为实际页面或脚本继续维护。
 
 ## 已识别的产品定位
