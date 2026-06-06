@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册 - 易聊智能</title>
+    <title>登录 - 易聊智能</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="page-shell">
     <header class="page-header">
         <a class="page-brand" href="../index.html">易聊智能</a>
-        <nav class="page-nav" aria-label="注册页导航">
+        <nav class="page-nav" aria-label="登录页导航">
             <a href="../index.html">首页</a>
             <a href="models.html">模型列表</a>
-            <a href="signin.html">登陆</a>
+            <a href="register.html">注册</a>
         </nav>
     </header>
 
@@ -20,15 +20,15 @@
         <section class="page-hero">
             <div class="page-hero-inner">
                 <div>
-                    <span class="eyebrow">注册账号</span>
-                    <h1>从一个账号开始连接所有 AI 模型</h1>
-                    <p>创建统一账号后，可以继续接入模型、管理额度和查看团队使用情况。</p>
+                    <span class="eyebrow">登录账号</span>
+                    <h1>回到你的 AI 工作台</h1>
+                    <p>集中查看历史对话、常用模型与额度信息，继续你的工作流。</p>
                 </div>
                 <div class="panel">
-                    <h3>注册收益</h3>
+                    <h3>登录后可用</h3>
                     <div class="link-list">
-                        <div class="link-item"><strong>统一配置</strong><span>无需重复维护多个模型入口。</span></div>
-                        <div class="link-item"><strong>成本透明</strong><span>在一个界面里查看费用与额度。</span></div>
+                        <div class="link-item"><strong>统一历史记录</strong><span>查看全部模型的会话记录。</span></div>
+                        <div class="link-item"><strong>调用统计</strong><span>快速了解 token 和成本趋势。</span></div>
                     </div>
                 </div>
             </div>
@@ -37,22 +37,18 @@
         <section class="page-section">
             <div class="auth-grid">
                 <article class="auth-card">
-                    <h2>创建新账号</h2>
-                    <p>当前为演示页面，可在此基础上继续接入真实注册流程。</p>
+                    <h2>账号登录</h2>
+                    <p>当前为演示页面，可直接作为后续接入真实认证接口的结构基础。</p>
                     <form data-demo-form>
                         <label>
-                            <span class="sr-only">团队名称</span>
-                            <input type="text" name="displayName" autocomplete="organization" placeholder="团队或个人名称">
-                        </label>
-                        <label>
                             <span class="sr-only">邮箱</span>
-                            <input type="email" name="email" autocomplete="email" placeholder="邮箱地址">
+                            <input type="email" name="email" autocomplete="username" placeholder="邮箱地址">
                         </label>
                         <label>
                             <span class="sr-only">密码</span>
-                            <input type="password" name="password" autocomplete="new-password" placeholder="设置密码">
+                            <input type="password" name="password" autocomplete="current-password" placeholder="密码">
                         </label>
-                        <button class="wb-btn wb-btn-primary" type="submit">注册</button>
+                        <button class="wb-btn wb-btn-primary" type="submit">登录</button>
                     </form>
                     <div class="form-message" data-form-message></div>
                 </article>

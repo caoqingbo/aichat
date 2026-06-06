@@ -16,7 +16,7 @@ aichat/
 │   ├── chat.html
 │   ├── login.html
 │   ├── models.html
-│   └── signin.html
+│   └── register.html
 ├── index.html
 └── .gitignore
 ```
@@ -26,8 +26,8 @@ aichat/
 - `index.html`：营销首页与站点入口
 - `pages/chat.html`：聊天工作台示例
 - `pages/models.html`：模型列表与筛选展示
-- `pages/signin.html`：登录页
-- `pages/login.html`：注册页
+- `pages/login.html`：登录页
+- `pages/register.html`：注册页
 
 ## 本地预览
 
