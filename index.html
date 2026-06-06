@@ -3,128 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat</title>
+    <title>易聊智能 - 一站式 AI 聚合服务网站</title>
     <link rel="stylesheet" href="style.css">
-    <!-- marked.js for Markdown rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- highlight.js for code highlighting -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/highlight.min.js"></script>
 </head>
-<body>
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-            <button id="newChatBtn" class="new-chat-btn">+ 新对话</button>
+<body class="whiteboard-home">
+    <header class="wb-nav" id="top">
+        <a class="wb-brand" href="index.html" aria-label="易聊智能首页">
+            <svg class="wb-logo" viewBox="0 0 48 48" role="img" aria-label="易聊智能抽象路由标识">
+                <rect x="5" y="8" width="30" height="25" rx="9" fill="#fff" stroke="#0A0A0A" stroke-width="3"></rect>
+                <path d="M14 36 L10 44 L23 36" fill="#fff" stroke="#0A0A0A" stroke-width="3" stroke-linejoin="round"></path>
+                <circle cx="17" cy="20" r="4" fill="#A259FF"></circle>
+                <circle cx="31" cy="18" r="4" fill="#1ABCFE"></circle>
+                <circle cx="28" cy="30" r="4" fill="#0ACF83"></circle>
+                <path d="M20 20 L27 18 M29 22 L28 26" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round"></path>
+            </svg>
+            <span>易聊智能</span>
+        </a>
+        <button class="wb-menu-btn" type="button" aria-expanded="false" aria-controls="wbNavLinks">
+            <span></span><span></span><span></span>
+            <span class="sr-only">打开导航</span>
+        </button>
+        <nav class="wb-nav-links" id="wbNavLinks" aria-label="首页导航">
+            <a href="index.html">首页</a>
+            <a href="models.html">模型列表</a>
+            <a href="#pricing">充值</a>
+            <a href="#docs">开发者文档</a>
+        </nav>
+        <div class="wb-nav-actions" aria-label="账户入口">
+            <a class="wb-nav-cta" href="signin.html">登陆</a>
+            <a class="wb-nav-cta" href="login.html">注册</a>
         </div>
-        <div id="chatList" class="chat-list">
-            <!-- Chat history items will be inserted here -->
-        </div>
-        <div class="sidebar-footer">
-            <div class="settings-btn" id="settingsBtn">⚙ 设置</div>
-        </div>
-    </div>
+    </header>
 
-    <!-- Toggle sidebar button -->
-    <button id="sidebarToggle" class="sidebar-toggle">☰</button>
+    <main>
+        <section class="wb-hero section-reveal">
+            <div class="wb-hero-inner">
+                <p class="wb-pill">20+ 主流 AI 模型 · 智能调度 · 一站式接入</p>
+                <h1>
+                    一站式 <mark class="marker-purple">AI 聚合</mark><br>
+                    服务网站
+                </h1>
+                <p class="wb-hero-subtitle">
+                    集成 20+ 主流 AI 模型，智能调度<span class="marker-yellow">降低成本 50%+</span>，
+                    <span class="tag-inline-blue">响应速度提升 3 倍</span>。支持 GPT-5、Claude、通义千问等顶级模型，一站式解决所有 AI 需求。
+                </p>
+                <div class="hero-buttons">
+                    <a class="wb-btn wb-btn-primary" href="chat.html">免费开始使用</a>
+                    <a class="wb-btn wb-btn-outline" href="models.html">查看模型列表</a>
+                </div>
+                <svg class="hero-arrow" viewBox="0 0 240 72" aria-hidden="true">
+                    <path d="M11 15 C65 61, 148 58, 213 31" fill="none" stroke="#0A0A0A" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 10"></path>
+                    <path d="M199 16 L222 30 L200 45" fill="none" stroke="#0A0A0A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </div>
+        </section>
 
-    <!-- Main content -->
-    <div class="main">
-        <!-- Messages area -->
-        <div id="messages" class="messages">
-            <div class="welcome">
-                <h1>🤖 AI Chat</h1>
-                <p>选择模型并开始对话</p>
+        <section class="wb-section feature-section section-reveal">
+            <div class="section-head">
+                <h2>为什么选择 <mark class="marker-yellow">易聊智能</mark></h2>
             </div>
-        </div>
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <svg viewBox="0 0 64 64"><circle cx="18" cy="22" r="9"></circle><circle cx="45" cy="19" r="9"></circle><circle cx="34" cy="45" r="9"></circle><path d="M25 24 L37 20 M38 27 L35 36"></path></svg>
+                    <h3>20+ 主流模型聚合</h3>
+                    <p>统一接入 GPT-5、Claude、通义千问等主流模型，不需要在多个平台之间切换。</p>
+                </article>
+                <article class="feature-card">
+                    <svg viewBox="0 0 64 64"><path d="M9 18 H32 C45 18 45 42 56 42"></path><path d="M46 32 L57 42 L46 52"></path><path d="M9 46 H28 C37 46 39 35 45 31"></path></svg>
+                    <h3>智能调度</h3>
+                    <p>根据任务类型、成本、速度和可用性，自动选择更合适的模型。</p>
+                </article>
+                <article class="feature-card">
+                    <svg viewBox="0 0 64 64"><path d="M10 18 V52 H56"></path><path d="M16 22 C28 38 39 41 53 29"></path><path d="M43 28 H54 V39"></path></svg>
+                    <h3>成本降低 50%+</h3>
+                    <p>通过模型路由、缓存策略和调用优化，帮助高频 AI 使用者显著降低综合成本。</p>
+                </article>
+                <article class="feature-card">
+                    <svg viewBox="0 0 64 64"><path d="M34 5 L13 36 H30 L25 59 L51 25 H34 Z"></path></svg>
+                    <h3>响应速度提升 3 倍</h3>
+                    <p>优化请求链路，减少等待时间，让 AI 调用更流畅。</p>
+                </article>
+            </div>
+        </section>
 
-        <!-- Input area -->
-        <div class="input-area">
-            <div class="input-container">
-                <textarea id="userInput" placeholder="输入消息... (Shift+Enter 换行)" rows="1"></textarea>
-                <button id="sendBtn" class="send-btn" title="发送">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"/>
-                    </svg>
-                </button>
+        <section class="wb-section pricing-section section-reveal" id="pricing">
+            <div class="section-head centered">
+                <h2>从一个账号开始，连接所有 AI 模型</h2>
+                <p>无需反复注册多个平台，无需维护复杂 API Key，无需在模型之间手动切换。易聊智能帮你统一管理、统一调用、统一优化。</p>
             </div>
-            <div class="input-footer">
-                <select id="modelSelect">
-                    <optgroup label="DeepSeek">
-                        <option value="deepseek-chat">DeepSeek V3</option>
-                        <option value="deepseek-reasoner">DeepSeek R1</option>
-                        <option value="xiaomi/mimo-v2-flash">MiMo V2 Flash</option>
-                    </optgroup>
-                    <optgroup label="OpenAI">
-                        <option value="gpt-4o">GPT-4o</option>
-                        <option value="gpt-4o-mini">GPT-4o Mini</option>
-                        <option value="gpt-4.1">GPT-4.1</option>
-                        <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
-                        <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
-                        <option value="o4-mini">o4-mini</option>
-                        <option value="o3">o3</option>
-                        <option value="o3-mini">o3 Mini</option>
-                        <option value="o3-pro">o3 Pro</option>
-                    </optgroup>
-                    <optgroup label="OpenRouter">
-                        <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
-                        <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
-                        <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
-                        <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
-                        <option value="meta-llama/llama-4-maverick">Llama 4 Maverick</option>
-                        <option value="qwen/qwen3-235b-a22b">Qwen3 235B</option>
-                        <option value="deepseek/deepseek-chat-v3-0324">DeepSeek V3 (OR)</option>
-                        <option value="deepseek/deepseek-r1">DeepSeek R1 (OR)</option>
-                    </optgroup>
-                </select>
-                <span id="tokenCount" class="token-count"></span>
+            <div class="pricing-grid">
+                <article><h3>免费体验版</h3><strong>即将上线</strong><ul><li>适合个人体验</li><li>基础模型调用</li><li>少量免费额度</li></ul><a class="wb-btn wb-btn-outline" href="chat.html">免费开始</a></article>
+                <article class="featured"><span>推荐</span><h3>专业版</h3><strong>¥XX / 月</strong><ul><li>适合高频 AI 用户</li><li>更多模型额度</li><li>智能调度</li><li>成本优化</li></ul><a class="wb-btn wb-btn-primary" href="chat.html">立即升级</a></article>
+                <article><h3>团队版</h3><strong>联系咨询</strong><ul><li>适合企业和团队</li><li>成员管理</li><li>统一账单</li><li>私有化或定制支持</li></ul><a class="wb-btn wb-btn-outline" href="#contact">联系咨询</a></article>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>设置</h2>
-                <button class="close-btn" id="closeSettings">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>DeepSeek API Key</label>
-                    <input type="password" id="apiKeyDeepseek" placeholder="sk-..." />
-                </div>
-                <div class="form-group">
-                    <label>OpenAI API Key</label>
-                    <input type="password" id="apiKeyOpenai" placeholder="sk-..." />
-                </div>
-                <div class="form-group">
-                    <label>OpenRouter API Key</label>
-                    <input type="password" id="apiKeyOpenrouter" placeholder="sk-or-..." />
-                </div>
-                <div class="form-group">
-                    <label>API 地址 (自动切换，可手动覆盖)</label>
-                    <input type="text" id="apiBase" placeholder="https://api.deepseek.com" />
-                </div>
-                <div class="form-group">
-                    <label>系统提示词 (System Prompt)</label>
-                    <textarea id="systemPrompt" rows="3" placeholder="你是一个有帮助的AI助手。"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Temperature</label>
-                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" />
-                    <span id="tempValue">0.7</span>
-                </div>
-                <div class="form-group">
-                    <label>上下文消息数</label>
-                    <input type="number" id="contextMessages" min="1" max="50" value="10" />
-                </div>
-                <button class="save-btn" id="saveSettings">保存设置</button>
-            </div>
-        </div>
-    </div>
+    </main>
 
-    <script src="app.js"></script>
+    <footer class="wb-footer">
+        <div><h3>产品</h3><a href="models.html">模型聚合</a><a href="models.html">智能调度</a><a href="#docs">API 接入</a><a href="#pricing">价格</a></div>
+        <div><h3>资源</h3><a href="#docs">开发文档</a><a href="#scenarios">使用教程</a><a href="models.html">模型列表</a><a href="#contact">常见问题</a></div>
+        <div><h3>公司</h3><a href="#">关于我们</a><a href="#contact">联系我们</a><a href="#">服务条款</a><a href="#">隐私政策</a></div>
+        <div><h3>联系</h3><a href="#contact">商务合作</a><a href="#contact">企业咨询</a><a href="#contact">客服支持</a></div>
+    </footer>
+
+    <script src="home.js"></script>
 </body>
 </html>
