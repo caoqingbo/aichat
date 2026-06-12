@@ -214,7 +214,10 @@ accountSignupForm?.addEventListener("submit", async (event) => {
             window.location.href = "chat.html";
         }, 800);
     } catch (err) {
-        if (signupStatus) signupStatus.textContent = err.message;
+        const msg = err.message === 'Failed to fetch' 
+            ? '无法连接服务器，请确认后端已启动 (cd backend && npm start)' 
+            : err.message;
+        if (signupStatus) signupStatus.textContent = msg;
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = "立即注册";
@@ -266,7 +269,10 @@ accountLoginForm?.addEventListener("submit", async (event) => {
 
         window.location.href = "chat.html";
     } catch (err) {
-        alert(err.message);
+        const msg = err.message === 'Failed to fetch' 
+            ? '无法连接服务器，请确认后端已启动 (cd backend && npm start)' 
+            : err.message;
+        alert(msg);
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = "登陆";

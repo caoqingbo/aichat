@@ -61,6 +61,19 @@ function updateUserUI() {
         sidebarUser.querySelector('strong').textContent = user.username;
         sidebarUser.querySelector('small').textContent = `余额 $${user.balance?.toFixed(2) || '0.00'}`;
     }
+
+    // 管理员：显示管理入口
+    if (user.role === 'admin') {
+        const nav = document.querySelector('.chat-nav');
+        if (nav && !document.getElementById('adminNavLink')) {
+            const adminLink = document.createElement('a');
+            adminLink.id = 'adminNavLink';
+            adminLink.href = 'admin.html';
+            adminLink.textContent = '🛡️ 管理';
+            adminLink.style.color = '#A259FF';
+            nav.appendChild(adminLink);
+        }
+    }
 }
 
 const MODEL_OPTIONS = [

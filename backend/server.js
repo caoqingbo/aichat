@@ -4,12 +4,20 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
+import { initDatabase, logUsage, updateUserBalance, findUserById } from './db/init.js';
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/user.js';
+import adminRoutes from './routes/admin.js';
+import { authenticateToken, optionalAuth } from './middleware/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 // ES 模块 import 会被提升，dotenv 之后用动态 import
 const { keyPool } = await import('./keyPool.js');
+
+// ===== 数据库初始化 =====
+await initDatabase();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,7 +75,7 @@ function getProviderName(model) {
 }
 
 // ===== 核心路由：AI 聊天代理（SSE 流式转发）=====
-app.post('/api/chat/completions', async (req, res) => {
+app.post('/api/chat/completions', optionalAuth, async (req, res) => {
     try {
         const { model, messages, temperature = 0.7, stream = true, userApiKeys } = req.body;
         
@@ -138,15 +146,31 @@ app.post('/api/chat/completions', async (req, res) => {
         res.setHeader('Connection', 'keep-alive');
         
         // 逐块转发流式响应
+        let totalChunks = '';
         response.data.on('data', (chunk) => {
+            totalChunks += chunk.toString();
             res.write(chunk);
         });
-        
+
         response.data.on('end', () => {
             res.end();
             console.log(`[代理完成] ${provider} ${model}`);
+            
+            // 记录用量（从 SSE 数据中提取 token 信息）
+            const tokenInfo = extractTokenUsage(totalChunks);
+            const cost = estimateCost(model, tokenInfo.promptTokens, tokenInfo.completionTokens);
+            if (req.user?.userId) {
+                logUsage(req.user.userId, model, provider, tokenInfo.promptTokens, tokenInfo.completionTokens, cost);
+                // 如果使用平台 Key，扣余额
+                if (!userApiKeys || !Object.values(userApiKeys).some(k => k)) {
+                    const user = findUserById(req.user.userId);
+                    if (user && user.balance >= cost) {
+                        updateUserBalance(user.id, Math.max(0, user.balance - cost));
+                    }
+                }
+            }
         });
-        
+
         response.data.on('error', (error) => {
             console.error(`[流式错误]`, error);
             res.end();
@@ -172,6 +196,52 @@ app.post('/api/chat/completions', async (req, res) => {
     }
 });
 
+// ===== Token 用量提取（从 SSE 流式数据解析）=====
+function extractTokenUsage(rawChunks) {
+    let promptTokens = 0, completionTokens = 0;
+    const lines = rawChunks.split('\n');
+    for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim();
+        if (data === '[DONE]') continue;
+        try {
+            const parsed = JSON.parse(data);
+            const usage = parsed.usage || parsed.choices?.[0]?.usage;
+            if (usage) {
+                promptTokens = usage.prompt_tokens || 0;
+                completionTokens = usage.completion_tokens || 0;
+            } else {
+                // 粗略估算
+                completionTokens += 1;
+            }
+        } catch { /* skip malformed chunks */ }
+    }
+    return { promptTokens, completionTokens };
+}
+
+// ===== 费用估算（美元/1K tokens）=====
+const MODEL_PRICING = {
+    'default':                 { prompt: 0.002,  completion: 0.004 },
+    'gpt-4o':                  { prompt: 0.0025, completion: 0.01  },
+    'gpt-4o-mini':             { prompt: 0.00015,completion: 0.0006},
+    'gpt-4.1':                 { prompt: 0.002,  completion: 0.008 },
+    'gpt-4.1-mini':            { prompt: 0.0004, completion: 0.0016},
+    'o3':                      { prompt: 0.01,   completion: 0.04  },
+    'o4-mini':                 { prompt: 0.0011, completion: 0.0044},
+    'deepseek-chat':           { prompt: 0.00027,completion: 0.0011},
+    'deepseek-reasoner':       { prompt: 0.00055,completion: 0.0022},
+};
+
+function estimateCost(model, promptTokens, completionTokens) {
+    const pricing = MODEL_PRICING[model] || MODEL_PRICING['default'];
+    return ((promptTokens / 1000) * pricing.prompt + (completionTokens / 1000) * pricing.completion);
+}
+
+// ===== 挂载路由 =====
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
+
 // ===== Key 池管理接口（管理员）=====
 app.get('/api/admin/keys', (req, res) => {
     res.json(keyPool.getStatus());
@@ -188,6 +258,9 @@ app.listen(PORT, () => {
     console.log(`📡 监听端口: ${PORT}`);
     console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
     console.log(`✅ 健康检查: http://localhost:${PORT}/health`);
+    console.log(`🔐 认证 API: http://localhost:${PORT}/api/auth/*`);
+    console.log(`👤 用户 API: http://localhost:${PORT}/api/user/*`);
+    console.log(`🛡️  管理 API: http://localhost:${PORT}/api/admin/*`);
     console.log(`🤖 代理端点: http://localhost:${PORT}/api/chat/completions`);
     console.log(`🔑 Key 池状态: http://localhost:${PORT}/api/admin/keys\n`);
 });
