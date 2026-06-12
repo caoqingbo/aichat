@@ -1,9 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import axios from 'axios';
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+// ES 模块 import 会被提升，dotenv 之后用动态 import
+const { keyPool } = await import('./keyPool.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,19 +24,18 @@ app.use((req, res, next) => {
     next();
 });
 
-// ===== 工具函数：获取 API Key =====
+// ===== 工具函数：获取 API Key（使用 Key 池）=====
 function getApiKey(provider, userApiKeys) {
     // 如果用户提供了自己的 Key，优先使用
     if (userApiKeys) {
-        if (provider === 'OpenAI' && userApiKeys.openai) return userApiKeys.openai;
-        if (provider === 'DeepSeek' && userApiKeys.deepseek) return userApiKeys.deepseek;
-        if (provider === 'OpenRouter' && userApiKeys.openrouter) return userApiKeys.openrouter;
+        if (provider === 'OpenAI' && userApiKeys.openai) return { key: userApiKeys.openai, fromPool: false };
+        if (provider === 'DeepSeek' && userApiKeys.deepseek) return { key: userApiKeys.deepseek, fromPool: false };
+        if (provider === 'OpenRouter' && userApiKeys.openrouter) return { key: userApiKeys.openrouter, fromPool: false };
     }
     
-    // 否则使用平台 Key 池
-    if (provider === 'OpenAI') return process.env.OPENAI_API_KEY;
-    if (provider === 'DeepSeek') return process.env.DEEPSEEK_API_KEY;
-    if (provider === 'OpenRouter') return process.env.OPENROUTER_API_KEY;
+    // 使用平台 Key 池
+    const keyObj = keyPool.getKey(provider);
+    if (keyObj) return { key: keyObj.key, fromPool: true, index: keyObj.index };
     
     return null;
 }
@@ -73,15 +78,15 @@ app.post('/api/chat/completions', async (req, res) => {
         // 确定提供商和 API 配置
         const provider = getProviderName(model);
         const apiBaseUrl = getApiBaseUrl(model);
-        const apiKey = getApiKey(provider, userApiKeys);
+        const keyInfo = getApiKey(provider, userApiKeys);
         
-        if (!apiKey) {
+        if (!keyInfo) {
             return res.status(401).json({ 
                 error: { message: `未配置 ${provider} API Key，请联系管理员或提供自己的 Key` } 
             });
         }
         
-        console.log(`[代理] ${provider} ${model} | 用户Key: ${!!userApiKeys} | 消息数: ${messages.length}`);
+        console.log(`[代理] ${provider} ${model} | Key池#${keyInfo.index ?? '用户'} | 消息数: ${messages.length}`);
         
         // 转发请求到 AI 提供商
         const response = await axios({
@@ -89,7 +94,7 @@ app.post('/api/chat/completions', async (req, res) => {
             url: `${apiBaseUrl}/v1/chat/completions`,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
+                'Authorization': `Bearer ${keyInfo.key}`,
             },
             data: {
                 model,
@@ -98,7 +103,34 @@ app.post('/api/chat/completions', async (req, res) => {
                 stream,
             },
             responseType: 'stream',
+            validateStatus: null, // 手动处理状态码
         });
+        
+        // 非 200 → 标记 Key 错误 + 返回错误
+        if (response.status !== 200) {
+            let errorBody = '';
+            for await (const chunk of response.data) {
+                errorBody += chunk.toString();
+            }
+            
+            // 标记 Key 池错误
+            if (keyInfo.fromPool) {
+                keyPool.markError(provider, keyInfo.index, response.status);
+            }
+            
+            let errorMsg = `${response.status} ${response.statusText}`;
+            try {
+                const parsed = JSON.parse(errorBody);
+                errorMsg = parsed.error?.message || errorMsg;
+            } catch {}
+            
+            return res.status(response.status).json({ error: { message: errorMsg } });
+        }
+        
+        // 成功 → 标记 Key 池成功
+        if (keyInfo.fromPool) {
+            keyPool.markSuccess(provider, keyInfo.index);
+        }
         
         // 设置 SSE 响应头
         res.setHeader('Content-Type', 'text/event-stream');
@@ -128,7 +160,6 @@ app.post('/api/chat/completions', async (req, res) => {
     } catch (error) {
         console.error('[代理错误]', error.message);
         
-        // 如果已经开始发送响应，无法再发送 JSON
         if (res.headersSent) {
             res.end();
         } else {
@@ -139,6 +170,11 @@ app.post('/api/chat/completions', async (req, res) => {
             });
         }
     }
+});
+
+// ===== Key 池管理接口（管理员）=====
+app.get('/api/admin/keys', (req, res) => {
+    res.json(keyPool.getStatus());
 });
 
 // ===== 健康检查 =====
@@ -152,5 +188,6 @@ app.listen(PORT, () => {
     console.log(`📡 监听端口: ${PORT}`);
     console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
     console.log(`✅ 健康检查: http://localhost:${PORT}/health`);
-    console.log(`🤖 代理端点: http://localhost:${PORT}/api/chat/completions\n`);
+    console.log(`🤖 代理端点: http://localhost:${PORT}/api/chat/completions`);
+    console.log(`🔑 Key 池状态: http://localhost:${PORT}/api/admin/keys\n`);
 });
