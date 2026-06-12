@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易聊智能 - 管理员控制台</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-shell { display: flex; min-height: calc(100vh - 60px); }
+        .admin-sidebar { width: 220px; background: var(--surface,#111); border-right: 1px solid var(--border,#333); padding: 20px 0; }
+        .admin-sidebar h2 { padding: 0 20px; margin-bottom: 16px; }
+        .admin-sidebar .tab-btn { display: block; width: 100%; text-align: left; padding: 10px 20px; background: none; border: none; color: var(--muted,#888); font-size: 14px; cursor: pointer; }
+        .admin-sidebar .tab-btn:hover, .admin-sidebar .tab-btn.active { color: #fff; background: var(--surface-hover,#1a1a1a); }
+        .admin-main { flex: 1; padding: 24px; overflow-y: auto; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--surface,#111); border: 1px solid var(--border,#333); border-radius: 10px; padding: 16px; }
+        .stat-card .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-card .stat-label { color: var(--muted,#888); font-size: 13px; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border,#333); font-size: 14px; }
+        th { font-weight: 600; color: var(--muted,#888); }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-admin { background: #A259FF; color: #fff; }
+        .badge-user { background: #333; color: #aaa; }
+        .search-bar { margin-bottom: 16px; display: flex; gap: 8px; }
+        .search-bar input { flex: 1; padding: 8px 12px; border: 1px solid var(--border,#333); border-radius: 6px; background: var(--surface,#111); color: #fff; }
+        .search-bar button { padding: 8px 16px; background: #A259FF; border: none; border-radius: 6px; color: #fff; cursor: pointer; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 56px; border-bottom: 1px solid var(--border,#333); background: var(--surface,#111); }
+        .topbar .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #fff; font-weight: 700; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: #1a1a1a; padding: 24px; border-radius: 12px; width: 400px; max-width: 90vw; }
+        .modal-box h3 { margin-top: 0; }
+        .modal-box .form-group { margin-bottom: 12px; }
+        .modal-box .form-group label { display: block; margin-bottom: 4px; font-weight: 600; }
+        .modal-box .form-group input, .modal-box .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #444; border-radius: 6px; background: #111; color: #fff; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: #A259FF; color: #fff; }
+        .btn-default { background: #333; color: #fff; }
+        .pagination { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 16px; }
+        .pagination button { padding: 6px 12px; border: 1px solid #444; background: #111; color: #fff; border-radius: 4px; cursor: pointer; }
+        .pagination button:disabled { opacity: 0.4; }
+        .usage-table-wrapper { overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a class="brand" href="index.html">
+            <span>⚡ 易聊智能 · 管理员控制台</span>
+        </a>
+        <span id="adminUser" style="color: var(--muted,#888);">管理员</span>
+    </div>
+
+    <div class="admin-shell">
+        <nav class="admin-sidebar">
+            <h2>管理面板</h2>
+            <button class="tab-btn active" data-tab="users">👥 用户管理</button>
+            <button class="tab-btn" data-tab="usage">📊 用量统计</button>
+            <button class="tab-btn" data-tab="keys">🔑 Key 池</button>
+        </nav>
+
+        <main class="admin-main">
+            <!-- 用户管理 -->
+            <div id="tabUsers" class="tab-panel active">
+                <div class="search-bar">
+                    <input type="text" id="userSearch" placeholder="搜索用户名或邮箱..." />
+                    <button id="userSearchBtn">搜索</button>
+                </div>
+                <div id="userTable"></div>
+                <div class="pagination" id="userPagination"></div>
+            </div>
+
+            <!-- 用量统计 -->
+            <div id="tabUsage" class="tab-panel">
+                <div class="stats-grid" id="usageSummary"></div>
+                <div class="usage-table-wrapper">
+                    <table id="usageTable">
+                        <thead><tr><th>日期</th><th>模型</th><th>提供商</th><th>输入Token</th><th>输出Token</th><th>费用($)</th><th>请求数</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Key 池 -->
+            <div id="tabKeys" class="tab-panel">
+                <div id="keyPoolStatus">加载中...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 编辑用户弹窗 -->
+    <div class="modal-overlay" id="editUserModal">
+        <div class="modal-box">
+            <h3>编辑用户</h3>
+            <div class="form-group"><label>用户名</label><input type="text" id="editUsername" disabled /></div>
+            <div class="form-group"><label>邮箱</label><input type="email" id="editEmail" /></div>
+            <div class="form-group"><label>角色</label><select id="editRole"><option value="user">用户</option><option value="admin">管理员</option></select></div>
+            <div class="form-group"><label>余额 ($)</label><input type="number" id="editBalance" step="0.01" min="0" /></div>
+            <div class="btn-group">
+                <button class="btn btn-default" id="closeEditModal">取消</button>
+                <button class="btn btn-primary" id="saveEditUser">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_KEY = 'yiliao_auth';
+        let currentPage = 1;
+        let editingUserId = null;
+
+        function getBackendUrl() {
+            try {
+                const cfg = JSON.parse(localStorage.getItem('aiai_chat_config') || '{}');
+                if (cfg.apiBase?.trim()) return cfg.apiBase.trim();
+            } catch {}
+            if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return 'http://localhost:3000';
+            if (!location.hostname || location.protocol === 'file:') return 'http://localhost:3000';
+            return '';
+        }
+
+        function getToken() {
+            try { return JSON.parse(localStorage.getItem(AUTH_KEY))?.access_token || ''; } catch { return ''; }
+        }
+
+        async function apiFetch(url, options = {}) {
+            const res = await fetch(`${getBackendUrl()}${url}`, {
+                ...options,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}`, ...options.headers },
+            });
+            if (res.status === 401) { localStorage.removeItem(AUTH_KEY); window.location.href = 'signin.html'; return null; }
+            return res;
+        }
+
+        // ===== 权限检查 =====
+        (function checkAdmin() {
+            const user = JSON.parse(localStorage.getItem(AUTH_KEY) || '{}')?.user;
+            if (!user || user.role !== 'admin') {
+                alert('需要管理员权限');
+                window.location.href = 'chat.html';
+                return;
+            }
+            document.getElementById('adminUser').textContent = `👤 ${user.username}（管理员）`;
+        })();
+
+        // ===== Tab 切换 =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
+                if (btn.dataset.tab === 'users') loadUsers();
+                if (btn.dataset.tab === 'usage') loadUsage();
+                if (btn.dataset.tab === 'keys') loadKeys();
+            });
+        });
+
+        // ===== 用户管理 =====
+        async function loadUsers(page = 1) {
+            currentPage = page;
+            const search = document.getElementById('userSearch').value;
+            const res = await apiFetch(`/api/admin/users?page=${page}&pageSize=15&search=${encodeURIComponent(search)}`);
+            if (!res) return;
+            const data = await res.json();
+
+            let html = '<table><thead><tr><th>ID</th><th>用户名</th><th>邮箱</th><th>余额</th><th>角色</th><th>注册时间</th><th>操作</th></tr></thead><tbody>';
+            data.rows.forEach(u => {
+                html += `<tr>
+                    <td>${u.id}</td>
+                    <td>${esc(u.username)}</td>
+                    <td>${esc(u.email || '-')}</td>
+                    <td>$${u.balance.toFixed(2)}</td>
+                    <td><span class="badge badge-${u.role}">${u.role}</span></td>
+                    <td>${u.created_at || '-'}</td>
+                    <td><button class="btn btn-default" onclick="editUser(${u.id})" style="font-size:12px;">编辑</button></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('userTable').innerHTML = html;
+
+            const totalPages = Math.ceil(data.total / data.pageSize);
+            let pageHtml = `<button ${currentPage <= 1 ? 'disabled' : ''} onclick="loadUsers(${currentPage - 1})">← 上一页</button>`;
+            pageHtml += `<span>第 ${currentPage} / ${totalPages} 页（共 ${data.total} 用户）</span>`;
+            pageHtml += `<button ${currentPage >= totalPages ? 'disabled' : ''} onclick="loadUsers(${currentPage + 1})">下一页 →</button>`;
+            document.getElementById('userPagination').innerHTML = pageHtml;
+        }
+
+        document.getElementById('userSearchBtn').addEventListener('click', () => loadUsers(1));
+        document.getElementById('userSearch').addEventListener('keydown', e => { if (e.key === 'Enter') loadUsers(1); });
+
+        // ===== 编辑用户 =====
+        async function editUser(id) {
+            editingUserId = id;
+            const res = await apiFetch(`/api/admin/users/${id}`);
+            if (!res) return;
+            const data = await res.json();
+            document.getElementById('editUsername').value = data.user.username;
+            document.getElementById('editEmail').value = data.user.email || '';
+            document.getElementById('editRole').value = data.user.role;
+            document.getElementById('editBalance').value = data.user.balance;
+            document.getElementById('editUserModal').classList.add('show');
+        }
+
+        document.getElementById('closeEditModal').addEventListener('click', () => {
+            document.getElementById('editUserModal').classList.remove('show');
+        });
+
+        document.getElementById('saveEditUser').addEventListener('click', async () => {
+            const body = {
+                email: document.getElementById('editEmail').value,
+                role: document.getElementById('editRole').value,
+                balance: parseFloat(document.getElementById('editBalance').value),
+            };
+            const res = await apiFetch(`/api/admin/users/${editingUserId}`, { method: 'PATCH', body: JSON.stringify(body) });
+            if (!res) return;
+            document.getElementById('editUserModal').classList.remove('show');
+            loadUsers(currentPage);
+        });
+
+        // ===== 用量统计 =====
+        async function loadUsage() {
+            const res = await apiFetch('/api/admin/usage?days=7');
+            if (!res) return;
+            const data = await res.json();
+
+            const s = data.summary || {};
+            document.getElementById('usageSummary').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${s.active_users || 0}</div><div class="stat-label">活跃用户（7天）</div></div>
+                <div class="stat-card"><div class="stat-value">${s.total_requests || 0}</div><div class="stat-label">总请求数</div></div>
+                <div class="stat-card"><div class="stat-value">${(s.total_prompt_tokens || 0).toLocaleString()}</div><div class="stat-label">输入 Token</div></div>
+                <div class="stat-card"><div class="stat-value">${(s.total_completion_tokens || 0).toLocaleString()}</div><div class="stat-label">输出 Token</div></div>
+                <div class="stat-card"><div class="stat-value">$${(s.total_cost || 0).toFixed(4)}</div><div class="stat-label">总费用</div></div>
+            `;
+
+            let html = '';
+            (data.stats || []).forEach(r => {
+                html += `<tr><td>${r.date}</td><td>${r.model}</td><td>${r.provider}</td><td>${r.prompt_tokens.toLocaleString()}</td><td>${r.completion_tokens.toLocaleString()}</td><td>$${r.cost.toFixed(4)}</td><td>${r.requests}</td></tr>`;
+            });
+            document.querySelector('#usageTable tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;color:#888;">暂无数据</td></tr>';
+        }
+
+        // ===== Key 池状态 =====
+        async function loadKeys() {
+            const res = await apiFetch('/api/admin/keys');
+            if (!res) return;
+            const data = await res.json();
+            let html = '';
+            for (const [provider, pool] of Object.entries(data)) {
+                html += `<h3 style="margin-bottom:8px;">${provider}</h3>`;
+                html += '<table><thead><tr><th>#</th><th>Key 前缀</th><th>状态</th><th>请求数</th><th>成功</th><th>错误</th><th>最后使用</th></tr></thead><tbody>';
+                (pool || []).forEach(k => {
+                    const prefix = k.key ? k.key.substring(0, 8) + '...' : '-';
+                    const status = k.healthy ? '🟢 正常' : '🔴 异常';
+                    html += `<tr><td>${k.index}</td><td>${prefix}</td><td>${status}</td><td>${k.stats.requests}</td><td>${k.stats.success}</td><td>${k.stats.errors}</td><td>${k.stats.lastUsed || '-'}</td></tr>`;
+                });
+                html += '</tbody></table><br>';
+            }
+            document.getElementById('keyPoolStatus').innerHTML = html || '<p style="color:#888;">无 Key 池数据</p>';
+        }
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+        // 初始加载
+        loadUsers();
+    </script>
+</body>
+</html>
