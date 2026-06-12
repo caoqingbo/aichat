@@ -1,5 +1,6 @@
 const DEFAULT_CONFIG = {
     apiBase: "",
+    useOwnKey: false,  // false=使用平台 Key 池, true=使用用户自己的 Key
     apiKeyDeepseek: "",
     apiKeyOpenai: "",
     apiKeyOpenrouter: "",
@@ -18,6 +19,8 @@ const MODEL_OPTIONS = [
     { id: "o4-mini", name: "o4-mini", provider: "OpenAI", apiBase: "https://api.openai.com" },
     { id: "o3", name: "o3", provider: "OpenAI", apiBase: "https://api.openai.com" },
     { id: "deepseek-chat", name: "DeepSeek V3", provider: "DeepSeek", apiBase: "https://api.deepseek.com" },
+    { id: "deepseek-v4-pro", name: "DeepSeek V4 Pro", provider: "DeepSeek", apiBase: "https://api.deepseek.com" },
+    { id: "deepseek-v4-flash", name: "DeepSeek V4 Flash", provider: "DeepSeek", apiBase: "https://api.deepseek.com" },
     { id: "deepseek-reasoner", name: "DeepSeek R1", provider: "DeepSeek", apiBase: "https://api.deepseek.com" },
     { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
     { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet", provider: "OpenRouter", apiBase: "https://openrouter.ai/api" },
@@ -28,6 +31,26 @@ const MODEL_OPTIONS = [
 ];
 
 let config = { ...DEFAULT_CONFIG };
+
+// ===== 获取后端服务地址 =====
+function getBackendUrl() {
+    // 优先使用用户配置的地址
+    if (config.apiBase && config.apiBase.trim()) {
+        return config.apiBase.trim();
+    }
+    // 自动检测：本地开发环境用 localhost:3000
+    if (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    // 直接打开 HTML 文件（file://）时也默认 localhost（开发体验）
+    if (!window.location.hostname || window.location.protocol === 'file:') {
+        return 'http://localhost:3000';
+    }
+    // 生产环境用相对路径（由 Nginx 代理）
+    return '';
+}
+
 let conversations = [];
 let currentChatId = null;
 let isStreaming = false;
@@ -92,6 +115,7 @@ function loadConfig() {
 
 function saveConfig() {
     config.apiBase = $("#apiBase").value.trim();
+    config.useOwnKey = $("#useOwnKey")?.checked || false;
     config.apiKeyDeepseek = $("#apiKeyDeepseek").value.trim();
     config.apiKeyOpenai = $("#apiKeyOpenai").value.trim();
     config.apiKeyOpenrouter = $("#apiKeyOpenrouter").value.trim();
@@ -104,6 +128,18 @@ function saveConfig() {
 
 function syncConfigToUI() {
     $("#apiBase").value = config.apiBase;
+    
+    // 设置单选框状态
+    const usePlatformKey = !config.useOwnKey;
+    $("#usePlatformKey").checked = usePlatformKey;
+    $("#useOwnKey").checked = config.useOwnKey;
+    
+    // 显示/隐藏 API Key 输入框
+    const apiKeyInputs = $("#apiKeyInputs");
+    if (apiKeyInputs) {
+        apiKeyInputs.style.display = config.useOwnKey ? "grid" : "none";
+    }
+    
     $("#apiKeyDeepseek").value = config.apiKeyDeepseek;
     $("#apiKeyOpenai").value = config.apiKeyOpenai;
     $("#apiKeyOpenrouter").value = config.apiKeyOpenrouter;
@@ -155,6 +191,24 @@ function bindEvents() {
     $("#temperature").addEventListener("input", (event) => {
         $("#tempValue").textContent = event.target.value;
     });
+
+    // 单选框切换事件：显示/隐藏 API Key 输入框
+    const usePlatformKeyRadio = $("#usePlatformKey");
+    const useOwnKeyRadio = $("#useOwnKey");
+    const apiKeyInputs = $("#apiKeyInputs");
+    
+    if (usePlatformKeyRadio && useOwnKeyRadio && apiKeyInputs) {
+        usePlatformKeyRadio.addEventListener("change", () => {
+            if (usePlatformKeyRadio.checked) {
+                apiKeyInputs.style.display = "none";
+            }
+        });
+        useOwnKeyRadio.addEventListener("change", () => {
+            if (useOwnKeyRadio.checked) {
+                apiKeyInputs.style.display = "grid";
+            }
+        });
+    }
 
     modelSelect.addEventListener("change", () => {
         const chat = getCurrentChat();
@@ -392,13 +446,16 @@ async function sendMessage() {
     if (!text || isStreaming) return;
 
     const model = getSelectedModel();
-    const apiKey = getApiKeyForModel(model);
-    const apiBase = getApiBaseForModel(model);
+    const backendUrl = getBackendUrl();
 
-    if (!apiKey) {
-        openSettings();
-        alert(`请先在高级设置中配置 ${model.provider} API Key`);
-        return;
+    // 如果使用自己的 Key，检查是否已配置
+    if (config.useOwnKey) {
+        const apiKey = getApiKeyForModel(model);
+        if (!apiKey) {
+            openSettings();
+            alert(`使用自己的 Key 模式下，请先在高级设置中配置 ${model.provider} API Key`);
+            return;
+        }
     }
 
     if (!currentChatId) createNewChat(false);
@@ -423,18 +480,29 @@ async function sendMessage() {
     updateSendButton();
 
     try {
-        const response = await fetch(`${apiBase.replace(/\/+$/, "")}/v1/chat/completions`, {
+        // 构建请求体
+        const requestBody = {
+            model: model.id,
+            messages: buildApiMessages(chat),
+            temperature: config.temperature,
+            stream: true,
+        };
+
+        // 如果使用自己的 Key，携带到请求体
+        if (config.useOwnKey) {
+            requestBody.userApiKeys = {
+                deepseek: config.apiKeyDeepseek,
+                openai: config.apiKeyOpenai,
+                openrouter: config.apiKeyOpenrouter,
+            };
+        }
+
+        const response = await fetch(`${backendUrl}/api/chat/completions`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${apiKey}`,
             },
-            body: JSON.stringify({
-                model: model.id,
-                messages: buildApiMessages(chat),
-                temperature: config.temperature,
-                stream: true,
-            }),
+            body: JSON.stringify(requestBody),
             signal: abortController.signal,
         });
 

@@ -115,7 +115,24 @@
                 <button class="close-btn" id="closeSettings" aria-label="关闭设置">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-grid">
+                <!-- API Key 来源选择 -->
+                <div class="form-group" style="border: 1px solid var(--border, #333); padding: 15px; border-radius: 8px; margin-bottom: 20px; background: var(--surface-hover, #1a1a1a);">
+                    <span style="display: block; margin-bottom: 10px; font-weight: 600;">API Key 来源</span>
+                    <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;">
+                        <input type="radio" name="keySource" value="platform" id="usePlatformKey" checked style="margin-right: 8px;">
+                        <span>使用平台 Key 池（推荐）- 按 token 计费，享受折扣优惠</span>
+                    </label>
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="radio" name="keySource" value="own" id="useOwnKey" style="margin-right: 8px;">
+                        <span>使用自己的 API Key - 仅收取小额通道服务费</span>
+                    </label>
+                    <p style="margin-top: 10px; font-size: 0.85em; color: var(--muted, #888); line-height: 1.4;">
+                        💡 自带 Key 需自行承担 AI 提供商费用 + 平台通道服务费 ¥0.5/万token
+                    </p>
+                </div>
+
+                <!-- API Key 输入框（仅在使用自己的 Key 时显示）-->
+                <div class="form-grid" id="apiKeyInputs" style="display: none;">
                     <label class="form-group">
                         <span>DeepSeek API Key</span>
                         <input type="password" id="apiKeyDeepseek" placeholder="sk-...">
@@ -128,11 +145,13 @@
                         <span>OpenRouter API Key</span>
                         <input type="password" id="apiKeyOpenrouter" placeholder="sk-or-...">
                     </label>
-                    <label class="form-group">
-                        <span>API 地址</span>
-                        <input type="text" id="apiBase" placeholder="自动按模型切换，可手动覆盖">
-                    </label>
                 </div>
+
+                <!-- 后端地址（开发调试用）-->
+                <label class="form-group" style="margin-top: 15px;">
+                    <span>后端服务地址（留空自动检测）</span>
+                    <input type="text" id="apiBase" placeholder="留空则自动使用：本地 http://localhost:3000 或生产环境相对路径">
+                </label>
                 <label class="form-group">
                     <span>系统提示词</span>
                     <textarea id="systemPrompt" rows="3" placeholder="你是一个有帮助的AI助手。"></textarea>
