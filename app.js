@@ -10,6 +10,59 @@ const DEFAULT_CONFIG = {
     useContext: true,
 };
 
+// ===== 认证工具 =====
+const AUTH_KEY = 'yiliao_auth';
+
+function getAuthData() {
+    try {
+        const raw = localStorage.getItem(AUTH_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
+
+function getAccessToken() {
+    return getAuthData()?.access_token || null;
+}
+
+function getUser() {
+    return getAuthData()?.user || null;
+}
+
+function isLoggedIn() {
+    return !!getAccessToken();
+}
+
+function requireAuth() {
+    if (!isLoggedIn()) {
+        // 未登录，跳转到登录页
+        window.location.href = 'signin.html';
+        return false;
+    }
+    return true;
+}
+
+function updateUserUI() {
+    const user = getUser();
+    if (!user) return;
+
+    // 更新顶部栏用户信息
+    const accountBtn = document.querySelector('.chat-account');
+    if (accountBtn) {
+        const initial = user.username.charAt(0).toUpperCase();
+        accountBtn.querySelector('span').textContent = initial;
+        accountBtn.querySelector('strong').textContent = user.username;
+    }
+
+    // 更新侧边栏用户信息
+    const sidebarUser = document.querySelector('.sidebar-user');
+    if (sidebarUser) {
+        const initial = user.username.charAt(0).toUpperCase();
+        sidebarUser.querySelector('span').textContent = initial;
+        sidebarUser.querySelector('strong').textContent = user.username;
+        sidebarUser.querySelector('small').textContent = `余额 $${user.balance?.toFixed(2) || '0.00'}`;
+    }
+}
+
 const MODEL_OPTIONS = [
     { id: "gpt-5.4", name: "gpt-5.4", provider: "OpenAI", apiBase: "https://api.openai.com" },
     { id: "gpt-4.1", name: "gpt-4.1", provider: "OpenAI", apiBase: "https://api.openai.com" },
@@ -77,12 +130,16 @@ const scrollUpBtn = $("#scrollUpBtn");
 const scrollDownBtn = $("#scrollDownBtn");
 
 function init() {
+    // 强制登录检查
+    if (!requireAuth()) return;
+
     loadConfig();
     loadConversations();
     populateModelOptions();
     bindEvents();
     renderChatList();
     syncConfigToUI();
+    updateUserUI();
 
     if (window.marked) {
         marked.setOptions({
@@ -501,12 +558,19 @@ async function sendMessage() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${getAccessToken()}`,
             },
             body: JSON.stringify(requestBody),
             signal: abortController.signal,
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                // Token 过期，跳转登录
+                localStorage.removeItem(AUTH_KEY);
+                window.location.href = 'signin.html';
+                return;
+            }
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.error?.message || `${response.status} ${response.statusText}`);
         }

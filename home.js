@@ -89,10 +89,33 @@ document.querySelector(".signup-form")?.addEventListener("submit", (event) => {
     window.location.href = "chat.html";
 });
 
+// ===== 账户系统：注册/登录后端对接 =====
+// 注意：auth.js 使用 ES module export，此处通过全局 window 访问
+
+function getBackendUrl() {
+    try {
+        const config = JSON.parse(localStorage.getItem('aiai_chat_config') || '{}');
+        if (config.apiBase && config.apiBase.trim()) return config.apiBase.trim();
+    } catch { /* ignore */ }
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    if (!window.location.hostname || window.location.protocol === 'file:') {
+        return 'http://localhost:3000';
+    }
+    return '';
+}
+
+function saveAuth(data) {
+    localStorage.setItem('yiliao_auth', JSON.stringify(data));
+}
+
 const accountSignupForm = document.querySelector("[data-account-signup-form]");
+const accountLoginForm = document.querySelector("[data-account-login-form]");
 const signupStatus = document.querySelector(".signup-status");
 const passwordMatchError = document.querySelector(".password-match-error");
 
+// ===== 密码显示切换 =====
 document.querySelectorAll("[data-password-toggle]").forEach((button) => {
     button.addEventListener("click", () => {
         const fieldName = button.dataset.passwordToggle;
@@ -124,7 +147,7 @@ function isPasswordStrongEnough(password) {
 accountSignupForm?.querySelector('input[name="password"]')?.addEventListener("input", updatePasswordMatchState);
 accountSignupForm?.querySelector('input[name="confirmPassword"]')?.addEventListener("input", updatePasswordMatchState);
 
-accountSignupForm?.addEventListener("submit", (event) => {
+accountSignupForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const account = accountSignupForm.querySelector('input[name="account"]');
@@ -151,7 +174,104 @@ accountSignupForm?.addEventListener("submit", (event) => {
         return;
     }
 
-    window.location.href = "chat.html";
+    // 调用后端注册 API
+    const submitBtn = accountSignupForm.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "注册中...";
+    }
+
+    try {
+        const res = await fetch(`${getBackendUrl()}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: account.value.trim(),
+                password: password.value,
+                email: securityEmail.value.trim(),
+            }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error?.message || '注册失败');
+        }
+
+        // 保存认证信息
+        saveAuth({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            user: data.user,
+        });
+
+        if (signupStatus) {
+            signupStatus.style.color = '#0ACF83';
+            signupStatus.textContent = '注册成功，正在跳转...';
+        }
+
+        setTimeout(() => {
+            window.location.href = "chat.html";
+        }, 800);
+    } catch (err) {
+        if (signupStatus) signupStatus.textContent = err.message;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "立即注册";
+        }
+    }
+});
+
+// ===== 登录表单处理 =====
+accountLoginForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const account = accountLoginForm.querySelector('input[name="account"]');
+    const password = accountLoginForm.querySelector('input[name="password"]');
+
+    if (!account.value.trim() || !password.value) {
+        alert("请输入账号和密码");
+        account.focus();
+        return;
+    }
+
+    const submitBtn = accountLoginForm.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "登录中...";
+    }
+
+    try {
+        const res = await fetch(`${getBackendUrl()}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: account.value.trim(),
+                password: password.value,
+            }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error?.message || '登录失败');
+        }
+
+        // 保存认证信息
+        saveAuth({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            user: data.user,
+        });
+
+        window.location.href = "chat.html";
+    } catch (err) {
+        alert(err.message);
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "登陆";
+        }
+    }
 });
 
 const modelFilterButtons = document.querySelectorAll("[data-model-filter]");
