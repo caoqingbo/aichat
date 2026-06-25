@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
 import { initDatabase, logUsage, updateUserBalance, findUserById } from './db/init.js';
@@ -25,6 +26,15 @@ const PORT = process.env.PORT || 3000;
 // ===== 中间件 =====
 app.use(cors());
 app.use(express.json());
+
+// ===== 静态文件服务（前端页面）=====
+// 生产模式：Docker 中 public/ 目录有前端文件
+// 开发模式：可直接访问根目录的 HTML 文件
+const publicDir = path.join(__dirname, 'public');
+if (fs.existsSync(publicDir)) {
+    app.use(express.static(publicDir));
+    console.log(`[静态文件] 服务目录: ${publicDir}`);
+}
 
 // ===== 日志中间件 =====
 app.use((req, res, next) => {
