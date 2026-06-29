@@ -6,7 +6,7 @@ const DEFAULT_CONFIG = {
     apiKeyOpenrouter: "",
     systemPrompt: "你是一个有帮助的AI助手。请用中文回答，表达清晰，必要时给出步骤。",
     temperature: 0.7,
-    contextMessages: 10,
+    contextMessages: 20,
     useContext: true,
 };
 
@@ -30,6 +30,32 @@ function getUser() {
 
 function isLoggedIn() {
     return !!getAccessToken();
+}
+
+function getRefreshToken() {
+    return getAuthData()?.refresh_token || null;
+}
+
+async function tryRefreshToken() {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return false;
+    try {
+        const res = await fetch(`${getBackendUrl()}/api/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        // 保存新的 Token
+        const auth = getAuthData() || {};
+        auth.access_token = data.access_token;
+        auth.refresh_token = data.refresh_token;
+        localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 function requireAuth() {
@@ -142,6 +168,13 @@ const modeLabel = $("#modeLabel");
 const scrollUpBtn = $("#scrollUpBtn");
 const scrollDownBtn = $("#scrollDownBtn");
 
+// 快速模型切换 pill 高亮同步
+function updateQuickModelPills() {
+    document.querySelectorAll(".model-pill[data-model]").forEach((pill) => {
+        pill.classList.toggle("active", pill.dataset.model === modelSelect.value);
+    });
+}
+
 function init() {
     // 强制登录检查
     if (!requireAuth()) return;
@@ -153,6 +186,104 @@ function init() {
     renderChatList();
     syncConfigToUI();
     updateUserUI();
+
+    // 快速模型切换按钮绑定
+    document.querySelectorAll(".model-pill[data-model]").forEach((pill) => {
+        pill.addEventListener("click", () => {
+            const modelId = pill.dataset.model;
+            if (modelId && modelSelect.value !== modelId) {
+                modelSelect.value = modelId;
+                modelSelect.dispatchEvent(new Event("change"));
+            }
+        });
+    });
+    updateQuickModelPills();
+
+    // 搜索图标按钮：展开/关闭搜索下拉面板
+    const modelSearchBtn = $("#modelSearchBtn");
+    const modelSearchDropdown = $("#modelSearchDropdown");
+    const modelSearchResults = $("#modelSearchResults");
+
+    const PROVIDER_ICONS = { OpenAI: "🟢", DeepSeek: "🔵", OpenRouter: "🟣" };
+
+    function renderSearchResults(query) {
+        const q = (query || "").trim().toLowerCase();
+        const current = modelSelect.value;
+        const filtered = MODEL_OPTIONS.filter((m) => {
+            const hay = `${m.name} ${m.id} ${m.provider}`.toLowerCase();
+            return !q || hay.includes(q);
+        });
+
+        if (!filtered.length) {
+            modelSearchResults.innerHTML = '<div class="search-empty">未找到匹配的模型</div>';
+            return;
+        }
+
+        const providers = [...new Set(filtered.map((m) => m.provider))];
+        let html = "";
+        providers.forEach((provider) => {
+            html += `<div class="search-group-label">${provider}</div>`;
+            filtered.filter((m) => m.provider === provider).forEach((m) => {
+                const icon = PROVIDER_ICONS[provider] || "⚪";
+                const activeClass = m.id === current ? " active" : "";
+                html += `<div class="search-item${activeClass}" data-model-id="${m.id}">
+                    <span class="search-item-icon">${icon}</span>
+                    <span class="search-item-name">${m.name}</span>
+                    <span class="search-item-provider">${provider}</span>
+                </div>`;
+            });
+        });
+        modelSearchResults.innerHTML = html;
+
+        // 绑定点击事件
+        modelSearchResults.querySelectorAll(".search-item").forEach((el) => {
+            el.addEventListener("click", () => {
+                const id = el.dataset.modelId;
+                if (id) {
+                    modelSelect.value = id;
+                    modelSelect.dispatchEvent(new Event("change"));
+                }
+                modelSearchDropdown.hidden = true;
+                modelSearchBtn.classList.remove("active");
+            });
+        });
+    }
+
+    if (modelSearchBtn && modelSearchDropdown) {
+        modelSearchBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isOpen = !modelSearchDropdown.hidden;
+            if (isOpen) {
+                modelSearchDropdown.hidden = true;
+                modelSearchBtn.classList.remove("active");
+            } else {
+                modelSearchDropdown.hidden = false;
+                modelSearchBtn.classList.add("active");
+                const input = modelSearchDropdown.querySelector("input");
+                if (input) {
+                    input.value = "";
+                    input.focus();
+                    renderSearchResults("");
+                }
+            }
+        });
+
+        // 点击外部关闭
+        document.addEventListener("click", (e) => {
+            if (!modelSearchDropdown.contains(e.target) && e.target !== modelSearchBtn) {
+                modelSearchDropdown.hidden = true;
+                modelSearchBtn.classList.remove("active");
+            }
+        });
+
+        // 搜索输入
+        const searchInput = modelSearchDropdown.querySelector("input");
+        if (searchInput) {
+            searchInput.addEventListener("input", () => {
+                renderSearchResults(searchInput.value);
+            });
+        }
+    }
 
     if (window.marked) {
         marked.setOptions({
@@ -208,6 +339,16 @@ function syncConfigToUI() {
     const apiKeyInputs = $("#apiKeyInputs");
     if (apiKeyInputs) {
         apiKeyInputs.style.display = config.useOwnKey ? "grid" : "none";
+    }
+    
+    // 更新卡片选中状态
+    const platformCard = $("#usePlatformKey")?.closest('.key-source-card');
+    const ownCard = $("#useOwnKey")?.closest('.key-source-card');
+    if (platformCard) {
+        platformCard.classList.toggle('active', usePlatformKey);
+    }
+    if (ownCard) {
+        ownCard.classList.toggle('active', config.useOwnKey);
     }
     
     $("#apiKeyDeepseek").value = config.apiKeyDeepseek;
@@ -267,17 +408,35 @@ function bindEvents() {
     const useOwnKeyRadio = $("#useOwnKey");
     const apiKeyInputs = $("#apiKeyInputs");
     
+    // 卡片选中状态更新函数
+    function updateKeySourceCards() {
+        const platformCard = usePlatformKeyRadio?.closest('.key-source-card');
+        const ownCard = useOwnKeyRadio?.closest('.key-source-card');
+        
+        if (platformCard) {
+            platformCard.classList.toggle('active', usePlatformKeyRadio.checked);
+        }
+        if (ownCard) {
+            ownCard.classList.toggle('active', useOwnKeyRadio.checked);
+        }
+    }
+    
     if (usePlatformKeyRadio && useOwnKeyRadio && apiKeyInputs) {
         usePlatformKeyRadio.addEventListener("change", () => {
             if (usePlatformKeyRadio.checked) {
                 apiKeyInputs.style.display = "none";
             }
+            updateKeySourceCards();
         });
         useOwnKeyRadio.addEventListener("change", () => {
             if (useOwnKeyRadio.checked) {
                 apiKeyInputs.style.display = "grid";
             }
+            updateKeySourceCards();
         });
+        
+        // 初始化卡片状态
+        updateKeySourceCards();
     }
 
     modelSelect.addEventListener("change", () => {
@@ -287,9 +446,9 @@ function bindEvents() {
             saveConversations();
         }
         updateTokenCount();
+        updateQuickModelPills();
     });
 
-    modelSearch.addEventListener("input", populateModelOptions);
     contextToggle.addEventListener("change", () => {
         config.useContext = contextToggle.checked;
         saveConfig();
@@ -352,6 +511,7 @@ function switchChat(chatId) {
     renderChatList();
     renderMessages();
     updateTokenCount();
+    updateQuickModelPills();
 }
 
 function deleteChat(chatId) {
@@ -511,7 +671,7 @@ function formatDate(timestamp) {
     }).format(timestamp || Date.now());
 }
 
-async function sendMessage() {
+async function sendMessage(_retry = false) {
     const text = userInput.value.trim();
     if (!text || isStreaming) return;
 
@@ -533,6 +693,8 @@ async function sendMessage() {
     if (!chat) return;
 
     chat.model = model.id;
+    modelSelect.value = model.id;
+    updateQuickModelPills();
     chat.messages.push({ role: "user", content: text });
     chat.updatedAt = Date.now();
     if (chat.messages.length === 1) chat.title = text.slice(0, 28) + (text.length > 28 ? "..." : "");
@@ -579,7 +741,15 @@ async function sendMessage() {
 
         if (!response.ok) {
             if (response.status === 401) {
-                // Token 过期，跳转登录
+                // 先尝试刷新 Token（仅首次 401 尝试刷新，避免无限循环）
+                if (!_retry) {
+                    const refreshed = await tryRefreshToken();
+                    if (refreshed) {
+                        // 刷新成功，重试一次
+                        return sendMessage(true);
+                    }
+                }
+                // 刷新失败或已重试过 → 真正过期了 → 清除认证并跳转登录
                 localStorage.removeItem(AUTH_KEY);
                 window.location.href = 'signin.html';
                 return;

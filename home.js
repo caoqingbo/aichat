@@ -110,6 +110,43 @@ function saveAuth(data) {
     localStorage.setItem('yiliao_auth', JSON.stringify(data));
 }
 
+// ===== 全站导航栏：登录状态检测 & UI 动态更新 =====
+function getAuthData() {
+    try {
+        const raw = localStorage.getItem('yiliao_auth');
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
+
+function updateNavAuthState() {
+    const navActions = document.querySelector('.wb-nav-actions');
+    if (!navActions) return;
+
+    const auth = getAuthData();
+    if (auth && auth.user && auth.access_token) {
+        // 已登录 → 显示用户头像 + 账号 + 退出按钮
+        const username = auth.user.username || '用户';
+        const initial = username.charAt(0).toUpperCase();
+        navActions.innerHTML = `
+            <a class="wb-nav-user" href="chat.html" title="进入控制台">
+                <span class="wb-nav-avatar">${initial}</span>
+                <strong class="wb-nav-username">${username}</strong>
+            </a>
+            <button class="wb-nav-logout" type="button" title="退出登录">退出</button>
+        `;
+        navActions.querySelector('.wb-nav-logout').addEventListener('click', () => {
+            localStorage.removeItem('yiliao_auth');
+            // 退出后刷新当前页面，让导航恢复为登陆/注册
+            window.location.reload();
+        });
+    } else {
+        // 未登录 → 保留原始的 登陆 / 注册 按钮（已在 HTML 中定义）
+    }
+}
+
+// 页面加载时立即检测登录状态并更新导航
+updateNavAuthState();
+
 const accountSignupForm = document.querySelector("[data-account-signup-form]");
 const accountLoginForm = document.querySelector("[data-account-login-form]");
 const signupStatus = document.querySelector(".signup-status");

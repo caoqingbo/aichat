@@ -27,7 +27,7 @@ class KeyPool {
             // 先检查多 Key 格式：PROVIDER_KEY_1, PROVIDER_KEY_2, ...
             for (let i = 1; i <= 99; i++) {
                 const key = process.env[`${provider}_KEY_${i}`];
-                if (key && key.trim() && !key.startsWith('sk-xxx')) {
+                if (key && key.trim() && !key.startsWith('sk-xxx') && !key.includes('your-') && !key.endsWith('-here')) {
                     keys.push(key.trim());
                 } else {
                     break; // 序号不连续就停止
@@ -37,7 +37,7 @@ class KeyPool {
             // 如果没找到多 Key，回退到单 Key 格式
             if (keys.length === 0) {
                 const singleKey = process.env[`${provider}_API_KEY`];
-                if (singleKey && singleKey.trim() && !singleKey.startsWith('sk-xxx')) {
+                if (singleKey && singleKey.trim() && !singleKey.startsWith('sk-xxx') && !singleKey.includes('your-') && !singleKey.endsWith('-here')) {
                     keys.push(singleKey.trim());
                 }
             }

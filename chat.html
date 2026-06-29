@@ -71,10 +71,14 @@
                     <span>▱</span>
                     <select id="modelSelect" aria-label="选择 AI 模型"></select>
                 </label>
-                <input id="modelSearch" class="model-search-hidden" type="search" aria-label="搜索模型">
-                <button class="model-pill" type="button">▱ GPT-5.5</button>
-                <button class="model-pill" type="button">▧ 生图</button>
-                <button class="model-pill more" type="button">更多模型⌄</button>
+                <button class="model-search-btn" id="modelSearchBtn" type="button" aria-label="搜索模型">🔍</button>
+                <div class="model-search-dropdown" id="modelSearchDropdown" hidden>
+                    <input id="modelSearch" class="model-search-input" type="search" placeholder="搜索模型名称..." aria-label="搜索模型">
+                    <div id="modelSearchResults" class="model-search-results"></div>
+                </div>
+                <button class="model-pill" type="button" data-model="gpt-5.4">GPT-5.4</button>
+                <button class="model-pill" type="button" data-model="deepseek-chat">DeepSeek</button>
+                <button class="model-pill" type="button" data-model="anthropic/claude-sonnet-4">Claude</button>
                 <label class="context-switch">
                     <input id="contextToggle" type="checkbox">
                     <span>使用上下文</span>
@@ -116,19 +120,28 @@
             </div>
             <div class="modal-body">
                 <!-- API Key 来源选择 -->
-                <div class="form-group" style="border: 1px solid var(--border, #333); padding: 15px; border-radius: 8px; margin-bottom: 20px; background: var(--surface-hover, #1a1a1a);">
-                    <span style="display: block; margin-bottom: 10px; font-weight: 600;">API Key 来源</span>
-                    <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;">
-                        <input type="radio" name="keySource" value="platform" id="usePlatformKey" checked style="margin-right: 8px;">
-                        <span>使用平台 Key 池（推荐）- 按 token 计费，享受折扣优惠</span>
-                    </label>
-                    <label style="display: flex; align-items: center; cursor: pointer;">
-                        <input type="radio" name="keySource" value="own" id="useOwnKey" style="margin-right: 8px;">
-                        <span>使用自己的 API Key - 仅收取小额通道服务费</span>
-                    </label>
-                    <p style="margin-top: 10px; font-size: 0.85em; color: var(--muted, #888); line-height: 1.4;">
-                        💡 自带 Key 需自行承担 AI 提供商费用 + 平台通道服务费 ¥0.5/万token
-                    </p>
+                <div class="key-source-group">
+                    <span class="key-source-title">API Key 来源</span>
+                    <div class="key-source-cards">
+                        <label class="key-source-card active">
+                            <input type="radio" name="keySource" value="platform" id="usePlatformKey" checked>
+                            <div class="key-source-card-content">
+                                <span class="key-source-icon">🏢</span>
+                                <span class="key-source-label">平台 Key 池</span>
+                                <span class="key-source-desc">按 token 计费，享受折扣优惠</span>
+                            </div>
+                            <span class="key-source-badge">推荐</span>
+                        </label>
+                        <label class="key-source-card">
+                            <input type="radio" name="keySource" value="own" id="useOwnKey">
+                            <div class="key-source-card-content">
+                                <span class="key-source-icon">🔑</span>
+                                <span class="key-source-label">使用自己的 Key</span>
+                                <span class="key-source-desc">仅收取小额通道服务费</span>
+                            </div>
+                        </label>
+                    </div>
+                    <p class="key-source-hint">💡 自带 Key 需自行承担 AI 提供商费用 + 平台通道服务费 ¥0.5/万token</p>
                 </div>
 
                 <!-- API Key 输入框（仅在使用自己的 Key 时显示）-->
@@ -163,7 +176,7 @@
                     </label>
                     <label class="form-group small-field">
                         <span>上下文消息数</span>
-                        <input type="number" id="contextMessages" min="1" max="50" value="10">
+                        <input type="number" id="contextMessages" min="1" max="50" value="20">
                     </label>
                 </div>
                 <button class="primary-btn full" id="saveSettings" type="button">保存设置</button>

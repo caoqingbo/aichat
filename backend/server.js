@@ -99,8 +99,8 @@ app.post('/api/chat/completions', optionalAuth, async (req, res) => {
         const keyInfo = getApiKey(provider, userApiKeys);
         
         if (!keyInfo) {
-            return res.status(401).json({ 
-                error: { message: `未配置 ${provider} API Key，请联系管理员或提供自己的 Key` } 
+            return res.status(503).json({ 
+                error: { message: `未配置 ${provider} API Key，请联系管理员或提供自己的 Key`, code: 'NO_API_KEY' } 
             });
         }
         
